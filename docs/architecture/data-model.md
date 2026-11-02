@@ -18,7 +18,7 @@ entity SupplierInvoices {
   InvoicingParty      : String(10);
   SupplierInvoiceIDByInvcgParty : String(16);
   DocumentCurrency    : String(5);
-  InvoiceGrossAmount  : Decimal(13, 2);
+  InvoiceGrossAmount  : Decimal(14, 3);
   PaymentBlockingReason : String(1);
   SupplierInvoiceStatus : String(1);
   SupplierInvoiceIsCreditMemo : String(1);
@@ -33,16 +33,15 @@ entity SupplierInvoicePoItems {
   PurchaseOrderItem       : String(5);
   Plant                   : String(4);
   DocumentCurrency        : String(5);
-  SupplierInvoiceItemAmount : Decimal(13, 2);
+  SupplierInvoiceItemAmount : Decimal(14, 3);
   QuantityInPurchaseOrderUnit : Decimal(13, 3);
   PurchaseOrderQuantityUnit : String(3);
   ReferenceDocument       : String(10);
   ReferenceDocumentFiscalYear : String(4);
   ReferenceDocumentItem   : String(4);
-  // Local stand-in until the OData name is confirmed in the EDMX.
-  // KBA 3838004 documents the RAP flag suplrinvcissubsqntdebitcrdt.
-  // This element is project storage, not a verified OData property.
-  subsequentDebitCredit   : Boolean default false;
+  // A_SuplrInvcItemPurOrdRef.IsSubsequentDebitCredit, Edm.String length 1.
+  // Empty when the item is not a subsequent debit or credit. The demo writes X when it is.
+  IsSubsequentDebitCredit : String(1);
 }
 
 entity PurchaseOrders {
@@ -59,8 +58,8 @@ entity PurchaseOrderItems {
   Material : String(40);
   OrderQuantity : Decimal(13, 3);
   PurchaseOrderQuantityUnit : String(3);
-  NetPriceAmount : Decimal(13, 2);
-  NetPriceQuantity : Decimal(13, 3);
+  NetPriceAmount : Decimal(12, 3);
+  NetPriceQuantity : Decimal(5, 0);
 }
 
 entity MaterialDocuments {
@@ -87,20 +86,21 @@ entity MaterialDocumentItems {
 
 entity BusinessPartners {
   key BusinessPartner : String(10);
-  BusinessPartnerName : String(80);
+  BusinessPartnerName : String(81);
   Supplier : String(10);
-  contacts : Composition of many BusinessPartnerContacts on contacts.company = $self;
+  emails : Composition of many BusinessPartnerEmails on emails.partner = $self;
 }
 
-entity BusinessPartnerContacts {
-  key company : Association to BusinessPartners;
-  key BusinessPartnerPerson : String(10);
-  BusinessPartnerName : String(80);
+entity BusinessPartnerEmails {
+  key partner : Association to BusinessPartners;
+  key AddressID : String(10);
+  key Person : String(10);
+  key OrdinalNumber : String(3);
   EmailAddress : String(241);
 }
 ```
 
-`subsequentDebitCredit` is the only `sap.sim` element that is not a verified OData name. Services that pretend to be SAP either omit it or expose it under the EDMX name once ticket 003 resolves that name. The investigation write path is the only writer of supplier invoices after seed load.
+`IsSubsequentDebitCredit` is the item field from `A_SuplrInvcItemPurOrdRef` in [the supplier invoice schema](../../metadata/API_SUPPLIERINVOICE_PROCESS_SRV.edmx). The investigation write path is the only writer of supplier invoices after seed load. `BusinessPartnerEmails` keeps the key of `A_AddressEmailAddress`: `AddressID`, `Person`, `OrdinalNumber`. It is not the full business partner service.
 
 There is no foreign-key association from the invoice item to the purchase order in `sap.sim`. The relationship is the documented reference fields, looked up by value, because that is how the OData documents point at each other.
 
@@ -233,7 +233,7 @@ Dismiss writes a `Decisions` row and closes the case. It does not update `sap.si
 
 Release sets `PaymentBlockingReason` to empty on the simulated invoice, writes the decision, and closes the case with outcome `release_payment_block`.
 
-Subsequent credit inserts a new `SupplierInvoices` row with `SupplierInvoiceIsCreditMemo` set, item quantity equal to the already invoiced quantity, item amount equal to the price difference, and `subsequentDebitCredit` true. The original invoice is left unchanged, including its payment block. The case closes with outcome `post_subsequent_credit`. The new document number is stored on the decision. Whether the original block should also be released is a separate human action and is out of the MVP. The UI says the original invoice remains blocked until someone releases it.
+Subsequent credit inserts a new `SupplierInvoices` row with `SupplierInvoiceIsCreditMemo` set to `X`, item quantity equal to the already invoiced quantity, item amount equal to the price difference, and `IsSubsequentDebitCredit` set to `X`. The original invoice is left unchanged, including its payment block. The case closes with outcome `post_subsequent_credit`. The new document number is stored on the decision. Whether the original block should also be released is a separate human action and is out of the MVP. The UI says the original invoice remains blocked until someone releases it.
 
 ## Services
 
@@ -277,6 +277,6 @@ service AgentToolService @(path: '/agent-tools') {
 | `invc.Investigations` and children | None |
 | `invc.EventInbox` | The consumer's copy of a CloudEvent. Event Mesh would not store this table. |
 | `sap.sim.*` | The OData entities named in the SAP reference, reduced to the verified fields |
-| `subsequentDebitCredit` | Stand-in for an unverified OData property |
+| `IsSubsequentDebitCredit` value `X` | The schema types the indicator as one character and does not publish a code list. `X` means set. Empty means not set. |
 | `projectTolerance` | Stand-in for invoice-verification tolerance customizing |
 | Block category shown in the UI | Calculated. The SAP field beside it is `PaymentBlockingReason`. |

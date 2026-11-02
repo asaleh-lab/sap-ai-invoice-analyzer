@@ -22,7 +22,8 @@ The model is specified in [data-model.md](../architecture/data-model.md). Field 
 
 ## Scope
 
-- `sap.sim` and `invc` CDS as specified, including the comment on `subsequentDebitCredit`.
+- `sap.sim` and `invc` CDS as specified, including `IsSubsequentDebitCredit` as `String(1)`.
+- Business partner email row for `17300001`: `AddressID` `1730000101`, `Person` `1730000102`, `OrdinalNumber` `001`, email `ap@helios-fasteners.example`. Those three keys are demo values. They follow the `A_AddressEmailAddress` key shape.
 - Projections `SimulatedS4Service` (`@readonly`) and `InvestigationService` (entities only, no actions yet).
 - CSV seed for the three blocked invoices, one historical unblocked invoice, their purchase orders, material documents, and business partner `17300001` Helios Fasteners GmbH with contact email `ap@helios-fasteners.example`.
 - Seed numbers from [tool-catalog.md](../architecture/tool-catalog.md):
@@ -63,7 +64,7 @@ Event consumer, agent, UI, write actions, EDMX import.
 - [ ] Invoice `5100000900` has an empty payment block reason.
 - [ ] Business partner `17300001` returns the name Helios Fasteners GmbH and the example email.
 - [ ] POST to the simulated supplier invoice entity set is rejected.
-- [ ] `subsequentDebitCredit` is false on every seeded item.
+- [ ] `IsSubsequentDebitCredit` is empty on every seeded item.
 
 ## Test cases
 
@@ -78,4 +79,4 @@ A reviewer can open OData and see SAP-shaped documents without credentials.
 
 ## Risks
 
-CAP CSV names must match entity and key columns. If a pending EDMX field is later renamed, only the adapter in ticket 003 changes the external name. The column in `sap.sim` can stay until that ticket says otherwise.
+CAP CSV names must match entity and key columns. Supplier invoice, purchase order, material document, and business partner names come from the files in `metadata/`. `NetPriceAmount` is decimal 12.3 and `NetPriceQuantity` is decimal 5.0, as in the purchase order schema.

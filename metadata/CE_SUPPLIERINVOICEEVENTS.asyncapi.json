@@ -1,0 +1,182 @@
+{
+  "asyncapi": "2.0.0",
+  "x-sap-catalog-spec-version": "1.0",
+  "info": {
+    "title": "Supplier Invoice Events",
+    "version": "1.0.0",
+    "description": "A supplier invoice is a document evidencing the posting of an incoming physical or electronic invoice in the SAP system during the invoice verification process. The invoice document can contain one or more items. The following events are available for supplier invoice:\r\n\r\n * Supplier invoice posted\r\n * Supplier invoice reversed"
+  },
+  "x-sap-api-type": "EVENT",
+  "x-sap-shortText": "Informs a remote system about created and canceled supplier invoice in an SAP S/4HANA Cloud tenant.",
+  "x-sap-stateInfo": {
+    "state": "ACTIVE"
+  },
+  "channels": {
+    "ce/sap/s4/beh/supplierinvoice/v1/SupplierInvoice/Canceled/v1": {
+      "subscribe": {
+        "message": {
+          "$ref": "#/components/messages/sap_s4_beh_supplierinvoice_v1_SupplierInvoice_Canceled_v1"
+        }
+      }
+    },
+    "ce/sap/s4/beh/supplierinvoice/v1/SupplierInvoice/Created/v1": {
+      "subscribe": {
+        "message": {
+          "$ref": "#/components/messages/sap_s4_beh_supplierinvoice_v1_SupplierInvoice_Created_v1"
+        }
+      }
+    }
+  },
+  "components": {
+    "messages": {
+      "sap_s4_beh_supplierinvoice_v1_SupplierInvoice_Canceled_v1": {
+        "name": "sap.s4.beh.supplierinvoice.v1.SupplierInvoice.Canceled.v1",
+        "summary": "SupplierInvoice Canceled",
+        "description": "This event is raised when a supplier invoice has been reversed.",
+        "headers": {
+          "properties": {
+            "type": {
+              "const": "sap.s4.beh.supplierinvoice.v1.SupplierInvoice.Canceled.v1"
+            },
+            "datacontenttype": {
+              "const": "application/json"
+            }
+          }
+        },
+        "payload": {
+          "$ref": "#/components/schemas/sap_s4_beh_supplierinvoice_v1_SupplierInvoice_Canceled_v1"
+        },
+        "traits": [
+          {
+            "$ref": "#/components/messageTraits/CloudEventContext"
+          }
+        ]
+      },
+      "sap_s4_beh_supplierinvoice_v1_SupplierInvoice_Created_v1": {
+        "name": "sap.s4.beh.supplierinvoice.v1.SupplierInvoice.Created.v1",
+        "summary": "SupplierInvoice Created",
+        "description": "This event is raised when a supplier invoice has been posted.",
+        "headers": {
+          "properties": {
+            "type": {
+              "const": "sap.s4.beh.supplierinvoice.v1.SupplierInvoice.Created.v1"
+            },
+            "datacontenttype": {
+              "const": "application/json"
+            }
+          }
+        },
+        "payload": {
+          "$ref": "#/components/schemas/sap_s4_beh_supplierinvoice_v1_SupplierInvoice_Created_v1"
+        },
+        "traits": [
+          {
+            "$ref": "#/components/messageTraits/CloudEventContext"
+          }
+        ]
+      }
+    },
+    "schemas": {
+      "sap_s4_beh_supplierinvoice_v1_SupplierInvoice_Canceled_v1": {
+        "type": "object",
+        "properties": {
+          "FiscalYear": {
+            "description": "# Definition\r\n\r\nA time period (usually 12 months) for which a company is required to provide its physical inventory count and balance sheet.\r\n\r\nThe fiscal year may correspond exactly to the calendar year, but this is not obligatory.\r\n\r\n### Dependencies\r\n\r\nThe relationship between the calendar year and the fiscal year is defined through the fiscal year variant.\r\n\r\nA fiscal year is divided into posting periods. Each posting period is defined by a start date and end date. In addition to the posting periods, there can be special periods for the year-end closing.",
+            "type": "string",
+            "maxLength": 4
+          },
+          "SupplierInvoice": {
+            "description": "# Definition\r\n\r\nNumber which uniquely identifies an invoice document.\r\n\r\n# Use\r\n\r\nThe invoice document number is unique in every company code and fiscal year. Depending on the system configuration, the invoice document number can either be entered manually or be assigned internally by the system from a predefined number range.",
+            "type": "string",
+            "maxLength": 10
+          },
+          "SupplierInvoiceFiscalYear": {
+            "description": "# Definition\r\n\r\nA time period (usually 12 months) for which a company is required to provide its physical inventory count and balance sheet.\r\n\r\nThe fiscal year may correspond exactly to the calendar year, but this is not obligatory.\r\n\r\n### Dependencies\r\n\r\nThe relationship between the calendar year and the fiscal year is defined through the fiscal year variant.\r\n\r\nA fiscal year is divided into posting periods. Each posting period is defined by a start date and end date. In addition to the posting periods, there can be special periods for the year-end closing.",
+            "type": "string",
+            "maxLength": 4
+          }
+        }
+      },
+      "sap_s4_beh_supplierinvoice_v1_SupplierInvoice_Created_v1": {
+        "type": "object",
+        "properties": {
+          "FiscalYear": {
+            "description": "# Definition\r\n\r\nA time period (usually 12 months) for which a company is required to provide its physical inventory count and balance sheet.\r\n\r\nThe fiscal year may correspond exactly to the calendar year, but this is not obligatory.\r\n\r\n### Dependencies\r\n\r\nThe relationship between the calendar year and the fiscal year is defined through the fiscal year variant.\r\n\r\nA fiscal year is divided into posting periods. Each posting period is defined by a start date and end date. In addition to the posting periods, there can be special periods for the year-end closing.",
+            "type": "string",
+            "maxLength": 4
+          },
+          "SupplierInvoice": {
+            "description": "# Definition\r\n\r\nNumber which uniquely identifies an invoice document.\r\n\r\n# Use\r\n\r\nThe invoice document number is unique in every company code and fiscal year. Depending on the system configuration, the invoice document number can either be entered manually or be assigned internally by the system from a predefined number range.",
+            "type": "string",
+            "maxLength": 10
+          },
+          "SupplierInvoiceFiscalYear": {
+            "description": "# Definition\r\n\r\nA time period (usually 12 months) for which a company is required to provide its physical inventory count and balance sheet.\r\n\r\nThe fiscal year may correspond exactly to the calendar year, but this is not obligatory.\r\n\r\n### Dependencies\r\n\r\nThe relationship between the calendar year and the fiscal year is defined through the fiscal year variant.\r\n\r\nA fiscal year is divided into posting periods. Each posting period is defined by a start date and end date. In addition to the posting periods, there can be special periods for the year-end closing.",
+            "type": "string",
+            "maxLength": 4
+          }
+        }
+      }
+    },
+    "messageTraits": {
+      "CloudEventContext": {
+        "headers": {
+          "type": "object",
+          "properties": {
+            "specversion": {
+              "description": "The version of the CloudEvents specification which the event uses. This enables the interpretation of the context.",
+              "type": "string",
+              "const": "1.0"
+            },
+            "type": {
+              "description": "Type of occurrence which has happened. Often this property is used for routing, observability, policy enforcement, etc.",
+              "type": "string",
+              "minLength": 1
+            },
+            "source": {
+              "description": "This describes the event producer.",
+              "type": "string",
+              "format": "uri-reference"
+            },
+            "subject": {
+              "description": "The subject of the event in the context of the event producer (identified by source).",
+              "type": "string",
+              "minLength": 1
+            },
+            "id": {
+              "description": "ID of the event.",
+              "type": "string",
+              "minLength": 1,
+              "examples": [
+                "6925d08e-bc19-4ad7-902e-bd29721cc69b"
+              ]
+            },
+            "time": {
+              "description": "Timestamp of when the occurrence happened. Must adhere to RFC 3339.",
+              "type": "string",
+              "format": "date-time",
+              "examples": [
+                "2018-04-05T17:31:00Z"
+              ]
+            },
+            "datacontenttype": {
+              "description": "Describe the data encoding format",
+              "type": "string",
+              "const": "application/json"
+            }
+          },
+          "required": [
+            "id",
+            "specversion",
+            "source",
+            "type"
+          ]
+        }
+      }
+    }
+  },
+  "externalDocs": {
+    "description": "Business Documentation",
+    "url": "https://help.sap.com/http.svc/ahp2/SAP_S4HANA_CLOUD/2608.latest/EN/3f/383669990a4957b0b58eae7d8b67b4/frameset.htm"
+  }
+}

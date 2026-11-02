@@ -1,21 +1,14 @@
 # SAP reference
 
-Retrieved 2 November 2026. This file records what was checked against SAP sources, and where a contract could not be opened.
+Retrieved 2 November 2026 from the signed-in Business Accelerator Hub catalog and from `$metadata` on `sandbox.api.sap.com`. The local copies are in [metadata/](../../metadata/). The running demo does not call that sandbox.
 
 The target product is **SAP S/4HANA Cloud Public Edition**. The Business Accelerator Hub catalog for package `SAPS4HANACloud` lists the APIs below as inbound OData services. Versions are the catalog versions returned on that date.
 
-Hub pages for a single API and for the event catalog redirected to sign-in during this research. Facts taken from the public catalog query are marked **Hub catalog**. Facts taken from SAP Help or an SAP Knowledge Base Article are marked **SAP Help / KBA**. Anything else is marked so it is not treated as the contract.
+Facts taken from the signed-in catalog or from the sandbox `$metadata` are marked **Hub catalog** or **sandbox `$metadata`**. Facts taken from SAP Help or an SAP Knowledge Base Article are marked **SAP Help / KBA**. Anything else is marked so it is not treated as the contract.
 
 ## Deployment choice
 
-Public Edition is the coherent target because one communication-arrangement model covers the invoice, the purchase order, the material document, and the business partner.
-
-| Choice | Why it was set aside |
-| --- | --- |
-| S/4HANA Cloud Public Edition | Selected. Released APIs, communication scenarios, and the same OData paths a side-by-side extension would call. |
-| S/4HANA Cloud Private Edition or on-premise | May expose the same released API names, and also exposes unreleased or custom services. The on-premise Hub package uses names such as `OP_API_SUPPLIERINVOICE_PROCESS_SRV`. This demo does not follow that package. |
-| SAP Business ByDesign | Different service names and payloads (`Query Supplier Invoices`, party nodes). Irrelevant to this scenario. |
-| ECC BAPIs such as `BAPI_INCOMINGINVOICE_RELEASE` | Different protocol and product. The Public Edition successor used here is the OData supplier invoice API. |
+**SAP S/4HANA Cloud Public Edition.** Released APIs, communication scenarios, and the same OData paths a side-by-side extension would call. One communication-arrangement model covers the invoice, the purchase order, the material document, and the business partner.
 
 A real tenant still needs a communication system, a communication user, and an active communication arrangement before any of these APIs answer. The catalog authentication label on each API below is `x509`. The local simulation has no SAP authentication.
 
@@ -50,9 +43,10 @@ Release:
 
 - KBA 3439469 (Public Edition) states this API can release an existing supplier invoice.
 - KBA 3778193 (Public Edition) states that release fails with `MRM_BASE000` ("Invoice is not blocked and cannot be released therefore") when the invoice is not in the logistics blocked-invoice set (`RBKP_BLOCKED`), even if a payment block indicator is visible. Blocks set only in Finance are outside this API. The Fiori app Release Blocked Invoices (transaction MRBR) has the same boundary. An SAP Community blog, "What is the function of Release Blocked Invoices", describes the app procedures **Blocked Due to Variances**, **Manual Payment Block**, and **Stochastically Blocked**, and the same `RBKP_BLOCKED` limit.
-- The OData action's technical name was not read from `$metadata` (the Hub specification and the sandbox `$metadata` both require authentication). The implementation must copy that name from the EDMX. This document does not treat integrator names for that action as verified.
+- The sandbox `$metadata` for catalog version 1.6.0 names the operation `Release`. It is a function import, HTTP POST, with `SupplierInvoice`, `FiscalYear`, and `DiscountDaysHaveToBeShifted` (Boolean). The demo sends `DiscountDaysHaveToBeShifted` false. See [metadata/API_SUPPLIERINVOICE_PROCESS_SRV.edmx](../../metadata/API_SUPPLIERINVOICE_PROCESS_SRV.edmx).
+- The same file has entity set `A_SupplierInvoiceBlock`. Its reason field is still `PaymentBlockingReason`, one character, label "Log. payment block". That entity is a logistics payment-block list. It is not an item blocking-reason code such as `SPGRQ`. The demo keeps the reason on the invoice header.
 
-Create for a subsequent credit uses the same create operation as any supplier invoice. KBA 2647639: the create payload must be a single entity. Header field `SupplierInvoiceIsCreditMemo` is in the SAP Help test script. The item-level subsequent-debit/credit indicator is documented for the internal RAP behavior `I_SupplierInvoiceTP` in KBA 3838004 as `suplrinvcissubsqntdebitcrdt`. That KBA says a header-level subsequent flag does not exist on that object. The external OData property name was not verified. Do not send the RAP field name to OData until the EDMX confirms it.
+Create for a subsequent credit uses the same create operation as any supplier invoice. KBA 2647639: the create payload must be a single entity. Header field `SupplierInvoiceIsCreditMemo` is `Edm.String` length 1. The item field on `A_SuplrInvcItemPurOrdRef` is `IsSubsequentDebitCredit`, also `Edm.String` length 1, label "Subseq. Debit/Credit". The schema does not publish a code list. The demo writes `X` when the indicator is set and leaves it empty when it is not. Do not send the RAP name `suplrinvcissubsqntdebitcrdt`.
 
 SOAP alternative, not used: `ECC_SUPLRINVCERPCRTRC` (`SupplierInvoiceERPCreateRequestConfirmation_In`), same communication scenario, for create including parked and held invoices. The demo stays on the OData API.
 
@@ -72,7 +66,7 @@ SOAP alternative, not used: `ECC_SUPLRINVCERPCRTRC` (`SupplierInvoiceERPCreateRe
 | Business documentation | https://help.sap.com/http.svc/ahp2/SAP_S4HANA_CLOUD/2608.latest/EN/ac/d2da57df6cc525e10000000a44147b/frameset.htm |
 | Read or write | Both. Catalog text: create, read, update, and delete purchase orders. This demo only reads. |
 
-KBA 3218443 identifies the item entity `A_PurchaseOrderItem`. KBA 2928975 identifies the item field `PurchaseOrderQuantityUnit` on `A_PurchaseOrderItemType`. Integrator and CDS-view examples also use `PurchaseOrder`, `PurchaseOrderItem`, `OrderQuantity`, `NetPriceAmount`, `NetPriceQuantity`, `DocumentCurrency`, `Material`, and `Supplier` on the header. Those extra names are **not confirmed from `$metadata` in this research**. Ticket 003 checks them against the EDMX before they are treated as the adapter contract. There is a newer OData V4 purchase order API (`api_purchaseorder_2`). This demo standardizes on the V2 service above so the stack matches the supplier invoice V2 service.
+The sandbox `$metadata` confirms header `A_PurchaseOrderType` (`Supplier`, `CompanyCode`, `DocumentCurrency`) and item `A_PurchaseOrderItemType`. Item fields used here: `OrderQuantity` decimal 13.3, `PurchaseOrderQuantityUnit` string 3, `NetPriceAmount` decimal 12.3, `NetPriceQuantity` decimal 5.0, `Material` string 40. Navigation from the header is `to_PurchaseOrderItem`. KBA 3218443 names the item entity. KBA 2928975 names `PurchaseOrderQuantityUnit`. There is a newer OData V4 purchase order API (`api_purchaseorder_2`). This demo standardizes on the V2 service above so the stack matches the supplier invoice V2 service. See [metadata/API_PURCHASEORDER_PROCESS_SRV.edmx](../../metadata/API_PURCHASEORDER_PROCESS_SRV.edmx).
 
 Purchase-order history (goods receipts and invoices already listed on the PO) is available on CDS view `I_PurchaseOrderHistoryAPI01`. That view is not assumed to be part of `API_PURCHASEORDER_PROCESS_SRV`. Goods receipts are read from the material document API instead.
 
@@ -92,7 +86,7 @@ Purchase-order history (goods receipts and invoices already listed on the PO) is
 | Business documentation | https://help.sap.com/http.svc/ahp2/SAP_S4HANA_CLOUD/2608.latest/EN/d4/c919581bc30a02e10000000a44147b/frameset.htm |
 | Read or write | Both. This demo only reads. |
 
-Catalog text: read and create material documents, including a goods receipt for a purchase order, and cancel a document or an item. SAP Cloud SDK documents the header entity `A_MaterialDocumentHeader` and the key `MaterialDocument` + `MaterialDocumentYear`.
+Catalog text: read and create material documents, including a goods receipt for a purchase order, and cancel a document or an item. The sandbox `$metadata` confirms header `A_MaterialDocumentHeader` keyed by `MaterialDocumentYear` and `MaterialDocument`, navigation `to_MaterialDocumentItem`, and item fields `GoodsMovementType`, `PurchaseOrder`, `PurchaseOrderItem`, `GoodsMovementRefDocType`, `QuantityInEntryUnit`, `EntryUnit`, `Material`, and `Plant`. See [metadata/API_MATERIAL_DOCUMENT_SRV.edmx](../../metadata/API_MATERIAL_DOCUMENT_SRV.edmx).
 
 KBA 3562938 gives a create payload for purchase-order goods movements: header `PostingDate`, `GoodsMovementCode` `01`, navigation `to_MaterialDocumentItem`, and items with `Material`, `Plant`, `GoodsMovementType` (`101` for goods receipt, also `103` and `105` in that KBA), `PurchaseOrder`, `PurchaseOrderItem`, `GoodsMovementRefDocType` `B`, `EntryUnit`, and `QuantityInEntryUnit`. KBA 3651756: `GoodsMovementRefDocType` `B` means the movement references a purchase order. Movement type 102 (reversal) is standard MM and was not re-quoted from a KBA in this pass. The demo seed posts 101 only.
 
@@ -118,8 +112,8 @@ The supplier is a business partner with a supplier role. SAP Cloud SDK documents
 
 Contact and email, from SAP KBAs and the SAP Developer Center CAP tutorial for this API:
 
-- `A_BusinessPartnerContact` identifies a contact relationship (`BusinessPartnerCompany`, `BusinessPartnerPerson`, `RelationshipNumber`).
-- `A_AddressEmailAddress` carries `AddressID` and `EmailAddress`.
+- `A_AddressEmailAddress` is keyed by `AddressID`, `Person`, and `OrdinalNumber`, and carries `EmailAddress` (string 241). `BusinessPartnerName` is string 81. That shape is in the sandbox `$metadata` for catalog version 1.7.0. See [metadata/API_BUSINESS_PARTNER.edmx](../../metadata/API_BUSINESS_PARTNER.edmx).
+- `A_BusinessPartnerContact` is keyed by `RelationshipNumber`, `BusinessPartnerCompany`, `BusinessPartnerPerson`, and `ValidityEndDate`, with navigation `to_ContactAddress`.
 - KBA 3392200: navigation `to_ContactAddress` on the contact supports read, and workplace address cannot be created through this API. The demo only reads email.
 
 The supplier master also has its own purchasing block (`purchasingIsBlocked` on `A_Supplier` in the Cloud SDK). That is a master-data block, separate from an invoice payment block.
@@ -131,14 +125,14 @@ Only fields cited above may be presented as SAP fields. Calculated block categor
 | Object | Identity | Fields used as SAP fields |
 | --- | --- | --- |
 | Supplier invoice header | `SupplierInvoice`, `FiscalYear` | `CompanyCode`, `DocumentDate`, `PostingDate`, `InvoicingParty`, `DocumentCurrency`, `InvoiceGrossAmount`, `PaymentBlockingReason`, `SupplierInvoiceStatus`, `SupplierInvoiceIDByInvcgParty`, `SupplierInvoiceIsCreditMemo`, `TaxIsCalculatedAutomatically` |
-| Supplier invoice PO item | invoice key + `SupplierInvoiceItem` | `PurchaseOrder`, `PurchaseOrderItem`, `Plant`, `DocumentCurrency`, `SupplierInvoiceItemAmount`, `QuantityInPurchaseOrderUnit`, `PurchaseOrderQuantityUnit`, `ReferenceDocument`, `ReferenceDocumentFiscalYear`, `ReferenceDocumentItem` |
-| Purchase order header | `PurchaseOrder` | `Supplier`, `CompanyCode`, `DocumentCurrency` pending EDMX check |
-| Purchase order item | `PurchaseOrder` + `PurchaseOrderItem` | `OrderQuantity`, `PurchaseOrderQuantityUnit`, `NetPriceAmount`, `NetPriceQuantity`, `Material` pending EDMX check. `PurchaseOrderQuantityUnit` is KBA-verified. |
+| Supplier invoice PO item | `SupplierInvoice`, `FiscalYear`, `SupplierInvoiceItem` | `PurchaseOrder`, `PurchaseOrderItem`, `Plant`, `DocumentCurrency`, `SupplierInvoiceItemAmount`, `QuantityInPurchaseOrderUnit`, `PurchaseOrderQuantityUnit`, `ReferenceDocument`, `ReferenceDocumentFiscalYear`, `ReferenceDocumentItem`, `IsSubsequentDebitCredit` |
+| Purchase order header | `PurchaseOrder` | `Supplier`, `CompanyCode`, `DocumentCurrency` |
+| Purchase order item | `PurchaseOrder` + `PurchaseOrderItem` | `OrderQuantity`, `PurchaseOrderQuantityUnit`, `NetPriceAmount`, `NetPriceQuantity`, `Material`. Navigation `to_PurchaseOrderItem`. |
 | Material document header | `MaterialDocument` + `MaterialDocumentYear` | `PostingDate`, `GoodsMovementCode`, `ReferenceDocument` |
 | Material document item | header key + `MaterialDocumentItem` | `GoodsMovementType`, `PurchaseOrder`, `PurchaseOrderItem`, `GoodsMovementRefDocType`, `QuantityInEntryUnit`, `EntryUnit`, `Material`, `Plant` |
 | Business partner | `BusinessPartner` | `BusinessPartnerName`, `Supplier` |
-| Address email | `AddressID` + person + ordinal, exact key pending EDMX | `EmailAddress` |
-| Contact relationship | relationship key pending EDMX | `BusinessPartnerCompany`, `BusinessPartnerPerson` |
+| Address email | `AddressID`, `Person`, `OrdinalNumber` | `EmailAddress` |
+| Contact relationship | `RelationshipNumber`, `BusinessPartnerCompany`, `BusinessPartnerPerson`, `ValidityEndDate` | Navigation `to_ContactAddress`. The demo stores the email row, not the full relationship. |
 
 `InvoiceGrossAmount` includes tax. Price comparison uses `SupplierInvoiceItemAmount` against the purchase-order net price. The demo does not invent a tax-code breakdown for the match.
 
@@ -162,15 +156,21 @@ An SAP-published integration guide on the Hub shows the payload shape actually u
 
 An SAP Help administration guide for another product shows the topic pattern `/sap/s4/beh/serviceorder/v1/ServiceOrder/Created/v1`. That is evidence of the topic pattern, for a different business object.
 
-The event catalog entity on `api.sap.com` required sign-in in this session. No official supplier-invoice event type was read from that catalog.
+The signed-in catalog has Public Edition package `CE_SUPPLIERINVOICEEVENTS`, version 1.0.0, title Supplier Invoice Events. The specification is [metadata/CE_SUPPLIERINVOICEEVENTS.asyncapi.json](../../metadata/CE_SUPPLIERINVOICEEVENTS.asyncapi.json). It publishes two events:
+
+- `sap.s4.beh.supplierinvoice.v1.SupplierInvoice.Created.v1` on topic `ce/sap/s4/beh/supplierinvoice/v1/SupplierInvoice/Created/v1`, raised when a supplier invoice has been posted.
+- `sap.s4.beh.supplierinvoice.v1.SupplierInvoice.Canceled.v1` on topic `ce/sap/s4/beh/supplierinvoice/v1/SupplierInvoice/Canceled/v1`, raised when a supplier invoice has been reversed.
+
+Both payloads carry `SupplierInvoice`, `FiscalYear`, and `SupplierInvoiceFiscalYear`. Neither payload contains a payment block. The on-premise package is `OP_SUPPLIERINVOICEEVENTS`. This demo follows the Public Edition package.
+
+The local publisher sends `SupplierInvoice.Created`. The consumer reads `A_SupplierInvoice`. A non-empty `PaymentBlockingReason` means that supplier invoice is blocked, and the investigation stores that value as the payment block reason. An empty reason means the invoice is not blocked. `SupplierInvoice.Canceled` is a reversal and is not an investigation trigger.
 
 ### What is not claimed
 
-- There is no verified event named Supplier Invoice Blocked, Payment Block Changed, or similar.
-- Third-party pages mention `sap.s4.beh.supplierinvoice.v1.SupplierInvoice.Created.v1`. That string was not confirmed on an SAP page retrieved here, so the demo does not emit it.
-- On-premise event package `SAPS4HANABusinessEvents_SupplierInvoiceEvents` exists as a Hub URL and is described by third parties as the on-premise package. It is not the Public Edition contract.
+- There is no event in that package named Supplier Invoice Blocked or Payment Block Changed.
+- The created event does not itself mean the invoice is blocked. The invoice field does.
 
-The demo therefore publishes a **synthetic event**, specified in [event-contracts.md](event-contracts.md). Its CloudEvents envelope follows the verified shape. Its `type` is deliberately outside the `sap.s4.beh` namespace. Its `data` carries the supplier invoice key only, which matches the verified key-only pattern, and the consumer must read the invoice API before it decides the invoice is blocked.
+The demo event is specified in [event-contracts.md](event-contracts.md). Its CloudEvents envelope follows the verified shape. Its `type` is the Hub created type. Its `data` carries the invoice key, and the invoice read supplies the payment block reason.
 
 SAP Event Mesh queue quality of service was not re-read from Help in this session. The local inbox still treats delivery as at-least-once, because that is the failure mode a consumer of business events has to survive. The exact Event Mesh QoS enum is not copied into this design.
 
@@ -196,7 +196,7 @@ How that maps onto this project:
 | `InvestigationService` | The workbench API. Projections of `invc`, plus the actions a person can approve. |
 | Agent tool routes | Read-only operations. They call the simulated services and return a trimmed JSON document. They are project APIs. |
 
-CAP can import a real EDMX (`cds import`). Ticket 003 may import the four EDMX files once they are downloaded from the Hub while signed in. Until then the CDS model contains only the verified field subset, with a comment on every pending field.
+The four service schemas and the supplier invoice event specification are in [metadata/](../../metadata/). They are local files. The app does not call the Hub, the sandbox, or a tenant to read them.
 
 ## Design assumptions
 
@@ -204,6 +204,6 @@ These are explicit so they are not mistaken for SAP facts.
 
 - Company code `1010`, currency `EUR`, and the fictional supplier Helios Fasteners are demo master data. `1010` appears in SAP's own sample payloads. It is not a claim about a particular tenant.
 - A project tolerance decides when a price difference is large enough to refuse release. Real SAP uses tolerance customizing in invoice verification. That customizing is not simulated.
-- The subsequent-credit OData property for "this item is a subsequent debit/credit" is unresolved until the EDMX is downloaded. See ADR 0003 and ticket 007.
-- The release action's OData name is unresolved in the same way.
-- No payment run, no clearing document, and no Finance-only payment block release are in scope. Releasing a block here means the logistics release operation only.
+- `IsSubsequentDebitCredit` and `SupplierInvoiceIsCreditMemo` are one-character indicators. The demo uses `X` for set. The schema does not list the allowed characters.
+- Releasing a block calls the local stand-in for function import `Release` and clears `PaymentBlockingReason`. It does not shift cash-discount days.
+- No payment run, no clearing document, and no Finance-only payment block release are in scope.

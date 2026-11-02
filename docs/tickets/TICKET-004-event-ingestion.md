@@ -7,24 +7,24 @@
 | | |
 | --- | --- |
 | Ticket ID | TICKET-004 |
-| Title | Synthetic CloudEvent inbox and one open case per invoice |
+| Title | Supplier invoice created event and one open case per blocked invoice |
 | Priority | High. MVP. |
 | Estimated effort | 4 hours |
 | Dependencies | TICKET-003 |
 
 ## User story
 
-As the demo publisher, I want to POST a blocked-invoice event and get one investigation, and I want a second delivery to leave that investigation alone.
+As the demo publisher, I want to POST a supplier invoice created event. The workbench reads that invoice, and when the invoice is blocked it opens one investigation that carries the payment block reason from the invoice. A second delivery leaves that investigation alone.
 
 ## Context
 
-Contract: [event-contracts.md](../architecture/event-contracts.md). The consumer proves the block by reading `getSupplierInvoice`, not by trusting extra fields on the event. The agent is not called yet. New cases stay in status `open`.
+Contract: [event-contracts.md](../architecture/event-contracts.md). The event identifies the supplier invoice. The consumer calls `getSupplierInvoice`. When `PaymentBlockingReason` is set, that supplier invoice is blocked and the investigation copies that value into `paymentBlockingReason`. When the reason is empty, or the invoice is missing, the inbox row is rejected and no case opens. The agent is not called yet. New cases stay in status `open`.
 
 ## Scope
 
 - `POST /simulated-events` accepting the CloudEvent JSON. This route is the simulated Event Mesh topic. The inbox row is the queue.
 - Inbox statuses and duplicate rules from the event contract.
-- Create `invc.Investigations` with list fields copied from the invoice read: supplier, supplier invoice reference (`SupplierInvoiceIDByInvcgParty`), gross amount, currency, `PaymentBlockingReason`, status `open`.
+- Create `invc.Investigations` only after the invoice read shows a payment block. Copy list fields from that read: supplier, supplier invoice reference (`SupplierInvoiceIDByInvcgParty`), gross amount, currency, `PaymentBlockingReason` into `paymentBlockingReason`, status `open`. The event payload does not supply the reason.
 - Copy `projectTolerance` `0.50` onto the case.
 - Drain `received` rows after the HTTP response is committed. In-process is enough (CAP `cds.spawn` or equivalent). Document the hook in a short comment.
 - `GET` on `InvestigationService` investigations and inbox for later UI.
@@ -44,7 +44,7 @@ Agent invocation, recommendations, UI, writes to `sap.sim`.
 
 ## SAP documentation
 
-Event section of [sap-reference.md](../architecture/sap-reference.md). The type string must remain `local.demo.supplierinvoice.payment-block-raised`.
+Event section of [sap-reference.md](../architecture/sap-reference.md). The accepted type is `sap.s4.beh.supplierinvoice.v1.SupplierInvoice.Created.v1`. A payment-block event type is not added.
 
 ## Expected artifacts
 
@@ -57,9 +57,10 @@ Event section of [sap-reference.md](../architecture/sap-reference.md). The type 
 - [ ] Repeating the same `id` returns the duplicate outcome and does not insert a second investigation.
 - [ ] A new id for `5100001001` while that case is open returns `duplicate_open_case` and still one investigation.
 - [ ] An unknown invoice id returns inbox `rejected` and no investigation.
-- [ ] A well-formed event for `5100000900` (no payment block) returns `rejected` and no investigation.
+- [ ] A well-formed created event for `5100000900` returns `rejected` and no investigation, because the invoice read shows an empty `PaymentBlockingReason`.
+- [ ] The investigation for `5100001001` stores payment block reason `A` taken from that invoice read.
 - [ ] A body without `data.FiscalYear` is `invalid`.
-- [ ] A wrong `type` is `invalid` or `rejected` and does not open a case. Pick one and test it. Document the choice in the handler comment. Prefer `invalid` when the type is not the synthetic type.
+- [ ] A type other than `sap.s4.beh.supplierinvoice.v1.SupplierInvoice.Created.v1` is `invalid` and does not open a case. Document that in the handler comment.
 - [ ] Restarting the process does not drop the inbox row when the SQLite file path is used.
 
 ## Test cases

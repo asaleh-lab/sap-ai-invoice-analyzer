@@ -1,6 +1,6 @@
 # Event contracts
 
-The workbench starts from a message on the simulated Event Mesh topic: a supplier invoice should be investigated because it was blocked. The topic is `POST /simulated-events`. The SQLite inbox is the queue. Delivery is treated as at-least-once. No official S/4HANA Cloud event for that fact was verified. See [sap-reference.md](sap-reference.md). The contract below is a **synthetic demo event**. It borrows the CloudEvents envelope and the key-only `data` object that SAP's own integration guide shows for S/4 business events. It does not use an `sap.s4.beh` type.
+The workbench starts from the Public Edition event for a posted supplier invoice. The topic is `POST /simulated-events`. The SQLite inbox is the queue. Delivery is treated as at-least-once. The event names the invoice. The consumer reads the supplier invoice and opens an investigation only when `PaymentBlockingReason` is set. That value is the payment block reason on the case. See [sap-reference.md](sap-reference.md).
 
 ## Envelope and payload
 
@@ -11,32 +11,34 @@ CloudEvents 1.0 attributes are the envelope. The SAP-shaped content is only `dat
 | `specversion` | `1.0` |
 | `id` | Unique event id. The inbox idempotency key. |
 | `source` | `local/demo/simulated-s4` |
-| `type` | `local.demo.supplierinvoice.payment-block-raised` |
+| `type` | `sap.s4.beh.supplierinvoice.v1.SupplierInvoice.Created.v1` |
 | `time` | RFC 3339 timestamp |
 | `datacontenttype` | `application/json` |
 | `subject` | `{SupplierInvoice}/{FiscalYear}` |
 | `data.SupplierInvoice` | Supplier invoice number. Same name as the OData key. |
 | `data.FiscalYear` | Fiscal year. Same name as the OData key. |
+| `data.SupplierInvoiceFiscalYear` | Same fiscal year, as in the Hub payload. When present it equals `FiscalYear`. |
 
-`data` has no amount, supplier, or block reason. The consumer loads those from the simulated supplier invoice API. That matches the verified S/4 pattern: the event identifies the object, and an API read loads the document.
+`data` has no amount, supplier, or payment block reason. The consumer loads the supplier invoice. A non-empty `PaymentBlockingReason` means the invoice is blocked, and the investigation stores that reason.
 
 ```json
 {
   "specversion": "1.0",
   "id": "8f1c0d2a-6b4e-4a1a-9c3e-1b7e5a0d4f11",
   "source": "local/demo/simulated-s4",
-  "type": "local.demo.supplierinvoice.payment-block-raised",
+  "type": "sap.s4.beh.supplierinvoice.v1.SupplierInvoice.Created.v1",
   "time": "2026-11-02T09:15:00Z",
   "datacontenttype": "application/json",
   "subject": "5100001001/2026",
   "data": {
     "SupplierInvoice": "5100001001",
-    "FiscalYear": "2026"
+    "FiscalYear": "2026",
+    "SupplierInvoiceFiscalYear": "2026"
   }
 }
 ```
 
-If a signed-in check of the Hub later shows a real supplier-invoice event whose `data` is this key pair, the inbox can accept that `type` as a second allowed type. The investigation flow stays the same. A guessed type such as `SupplierInvoice.Blocked` must not be added without that check.
+The Hub package also publishes `sap.s4.beh.supplierinvoice.v1.SupplierInvoice.Canceled.v1` for a reversed invoice. The inbox does not treat that type as an investigation trigger. A guessed type such as `SupplierInvoice.Blocked` is not in the package and is not added.
 
 ## How this maps to a real integration
 
@@ -47,9 +49,10 @@ In a tenant, Enterprise Event Enablement would publish a business event to SAP E
 Reject, persist the attempt when the body can be stored, and do not open an investigation when:
 
 - `specversion` is not `1.0`
-- `type` is not the synthetic type
+- `type` is not `sap.s4.beh.supplierinvoice.v1.SupplierInvoice.Created.v1`
 - `id`, `source`, or `data` is missing
 - `data.SupplierInvoice` or `data.FiscalYear` is empty
+- `data.SupplierInvoiceFiscalYear` is present and differs from `data.FiscalYear`
 - the JSON is not an object
 
 HTTP `400` for a malformed event. The response body is a project error, not an SAP message.
@@ -63,7 +66,7 @@ HTTP `400` for a malformed event. The response body is a project error, not an S
 | New `id`, an investigation for that invoice and fiscal year is still open | `duplicate_open_case` | No second open investigation. The new id is noted on the open case. |
 | New `id`, previous investigation for that invoice is closed | `processed` | A new investigation may open. A block can be raised again after a release. |
 | Invoice key not found | `rejected` | None |
-| Invoice found and `PaymentBlockingReason` is empty | `rejected` | None. The event claimed a block the API does not show. |
+| Invoice found and `PaymentBlockingReason` is empty | `rejected` | None. The supplier invoice is not blocked. |
 
 The unique key of the inbox is `id`. Processing checks the open investigation as a second guard so two different ids cannot open two active cases for one invoice.
 

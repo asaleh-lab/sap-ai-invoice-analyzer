@@ -45,7 +45,7 @@ No SAP host, client, or user is required.
 
 The field names and the API jobs are taken from SAP S/4HANA Cloud Public Edition, as far as we could verify them on the Help Portal, in SAP notes, and on the Business Accelerator Hub. The notes are in [docs/architecture/sap-reference.md](docs/architecture/sap-reference.md). The running app does not connect to SAP.
 
-A few names we could not confirm, because the API metadata sits behind a Hub login. The release operation exists. Its technical OData name is still to be copied from that metadata. The flag that marks a subsequent credit on the item is a local stand-in until the same check. The event type `local.demo.supplierinvoice.payment-block-raised` is ours. We did not invent an `sap.s4.beh` name for a blocked invoice.
+The four service schemas are in `metadata/`, taken from the public sandbox `$metadata` on 2 November 2026. Release is the function import `Release`. A subsequent credit sets `IsSubsequentDebitCredit` and `SupplierInvoiceIsCreditMemo` to `X`. SAP's supplier invoice created event names the invoice. We read the invoice, and a non-empty `PaymentBlockingReason` is what makes it a blocked invoice. That value is the reason on the case. The package has no payment-block event. The running app does not call SAP.
 
 ## Limits we accepted
 

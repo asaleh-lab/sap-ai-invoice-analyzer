@@ -1,6 +1,6 @@
 # Solution overview
 
-A local workbench for a blocked supplier invoice. A synthetic event names the invoice. The application opens an investigation, an agent reads simulated SAP APIs, and a person approves any financial change. The running system is not connected to SAP S/4HANA.
+A local workbench for a blocked supplier invoice. A supplier invoice created event names the invoice. The application reads that invoice, opens an investigation when it is blocked, an agent reads simulated SAP APIs, and a person approves any financial change. The running system is not connected to SAP S/4HANA.
 
 The SAP contracts, and the places they were corrected, are in [sap-reference.md](sap-reference.md). Decisions are in `docs/adr/`.
 
@@ -46,8 +46,8 @@ No real Event Mesh broker, no second database, no second process, no retrieval i
 
 1. Seed CSV loads purchase orders, material documents, business partners, and supplier invoices into `sap.sim`.
 2. `POST /simulated-events` stores `invc.EventInbox` and returns `202`.
-3. The consumer reads the invoice through the simulated supplier invoice API. Empty `PaymentBlockingReason`, or an unknown key, rejects the inbox row.
-4. Otherwise it inserts `invc.Investigations` in status `open`, copying list fields from that read.
+3. The consumer reads the invoice through the simulated supplier invoice API. An empty `PaymentBlockingReason` means the invoice is not blocked. An unknown key is the same outcome. Both reject the inbox row.
+4. When `PaymentBlockingReason` is set, the consumer inserts `invc.Investigations` in status `open` and copies that reason onto the case with the other list fields from the read.
 5. The investigation handler calls the advisor module with the case id, an objective, the invoice key, and the six tool functions. The invoice document is not passed in.
 6. The advisor calls those functions. Each call is logged as evidence when the recommendation is stored.
 7. CAP checks the policy in [tool-catalog.md](tool-catalog.md) and sets status `awaiting_review`.
@@ -88,7 +88,7 @@ Accept / proceed does not mean "post the invoice" and does not mean "pay the sup
 | Communication arrangement `SAP_COM_0057`, `SAP_COM_0053`, `SAP_COM_0108`, `SAP_COM_0008`, x509 as labeled on the Hub | No credentials. Adapters read SQLite. |
 | OData V2 on `/sap/opu/odata/sap/...` | CAP services `/simulated-s4`, `/agent-tools`, `/workbench` |
 | Enterprise Event Enablement and SAP Event Mesh | `POST /simulated-events` and the SQLite inbox, with the same consumer duties: accept a CloudEvent, store it, tolerate a repeat |
-| Released event type from the Hub catalog | Synthetic type `local.demo.supplierinvoice.payment-block-raised` |
+| Released event type `sap.s4.beh.supplierinvoice.v1.SupplierInvoice.Created.v1` | Same type on the local topic. The payment block reason comes from the invoice read. |
 | Fiori Release Blocked Invoices | Workbench action that simulates the release API |
 | Invoice posted in the tenant | Seed data, plus subsequent credits created by the action |
 
@@ -122,21 +122,14 @@ Accept / proceed does not mean "post the invoice" and does not mean "pay the sup
 | Accept / proceed as a generic SAP write | A blocked invoice in this scenario is already posted. Posting it again, or paying it, is a different process. Release fails when the invoice is not in the logistics block set. | KBA 3439469, KBA 3778193, Release Blocked Invoices app | Accept calls the supplier invoice release operation and only clears the payment block. |
 | Request adjustment might edit the invoice or always create a credit memo | Posted invoices are not changed in place. A subsequent credit adjusts value and keeps quantity. A credit memo is the quantity-correcting document. | SAP Learning, logistics invoice verification. KBA 3838004 for the item-level subsequent flag. | Price-variance seed posts a subsequent credit. Quantity-variance seed must not. |
 | Compare gross amount to the purchase order | `InvoiceGrossAmount` includes tax. | Field is the header gross. Item amount is `SupplierInvoiceItemAmount` in the Help test script. | Variance uses the item amount and the PO net price. |
-| An official blocked-invoice event | The event catalog could not be read without sign-in. Inventing `sap.s4.beh...Blocked` would be a false SAP name. | Hub sign-in wall. Verified CloudEvents example is key-only for a business partner. | Synthetic type outside `sap.s4.beh`. `data` is the invoice key. The API read proves the block. |
+| An official blocked-invoice event | The Public Edition package `CE_SUPPLIERINVOICEEVENTS` publishes posted and reversed invoices only. | [metadata/CE_SUPPLIERINVOICEEVENTS.asyncapi.json](../../metadata/CE_SUPPLIERINVOICEEVENTS.asyncapi.json) | Handle the created event. A non-empty `PaymentBlockingReason` on the invoice is the block, and that value is the reason on the case. |
 | Event Mesh as local infrastructure | The behavior to demonstrate is validation, idempotency, and retry. | CAP can persist the inbox in SQLite. | No broker. |
 | Agent receives a context object, or the agent posts the financial document | The brief asked for tool choice and for human approval. One without the other misses the portfolio point. | ADR 0004 | Read tools only. Policy check before save. Writes only on investigation actions. |
-| Item blocking reason codes (`SPGRQ` and similar) on the OData payload | Those are classic invoice-verification indicators. They were not found on the verified OData field list. | Research limit: no `$metadata` | UI "block reason" shows raw `PaymentBlockingReason` and a calculated block category, labeled as calculated. |
+| Item blocking reason codes (`SPGRQ` and similar) on the OData payload | Those are classic invoice-verification indicators. They are not properties of `A_SupplierInvoiceType`. `A_SupplierInvoiceBlock` still uses the one-character `PaymentBlockingReason`. | [metadata/API_SUPPLIERINVOICE_PROCESS_SRV.edmx](../../metadata/API_SUPPLIERINVOICE_PROCESS_SRV.edmx) | UI "block reason" shows raw `PaymentBlockingReason` and a calculated block category, labeled as calculated. |
 | Supplier invoice history as its own API | History is a filtered read of the same invoice API, and an unfiltered read is unsafe. | KBA 3644600 | `get_supplier_invoice_history` filters on `InvoicingParty`. |
 | A real Event Mesh broker on the laptop | The faithful part is the consumer: store the CloudEvent, then ignore a duplicate. | ADR 0002 | Simulated topic and SQLite inbox. |
 | Dashboard required for the first demo | It does not change the financial path. | Two evenings | Tickets 001–007 are the vertical slice. Ticket 008 is optional. |
 
-## Unverified until an EDMX download
+## Schemas on disk
 
-Ticket 003 stops and records the EDMX names before inventing them:
-
-- Release action name on `API_SUPPLIERINVOICE_PROCESS_SRV`
-- OData property for subsequent debit/credit on the PO-reference item
-- Purchase order fields still marked pending in the SAP reference
-- Exact key of `A_AddressEmailAddress`
-
-The sandbox `$metadata` URL returned HTTP 401 without an API key. The Hub specification download returned the sign-in page.
+The four OData schemas and the supplier invoice event specification are in [metadata/](../../metadata/). They were downloaded from the sandbox and the signed-in Hub on 2 November 2026. Ticket 003 follows those files. The running app still does not call SAP.

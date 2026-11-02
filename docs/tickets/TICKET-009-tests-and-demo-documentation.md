@@ -25,7 +25,7 @@ Earlier tickets own their unit tests. This ticket adds the path that must not re
 - One automated test, no live LLM: publish the price-variance event, wait until `awaiting_review`, call `postSubsequentCredit`, assert the new document and the unchanged original invoice, assert inbox duplicate on a second POST of the same event id.
 - README sections listed in the project brief: purpose, architecture summary, local setup, how the simulation works, how to run the demo, what is SAP-aligned versus local, a short walkthrough of the three invoices, known limitations.
 - The walkthrough uses the three sample event ids and the expected recommendations.
-- Known limitations must include: no tenant, simulated Event Mesh, synthetic event, release action name unverified against EDMX, subsequent-credit flag is a local stand-in until EDMX confirmation, no payment run, no Finance-only block, project tolerance is not SAP customizing, scripted advisor when no model key is set. The README stays in the same voice as the current one: what the two evenings are for, out-of-the-box SAP first, then the local fit.
+- Known limitations must include: no tenant, simulated Event Mesh, no official payment-block event (a created event is handled by reading `PaymentBlockingReason`), `IsSubsequentDebitCredit` uses `X` because the schema has no code list, no payment run, no Finance-only block, project tolerance is not SAP customizing, scripted advisor when no model key is set. The README stays in the same voice as the current one: what the two evenings are for, out-of-the-box SAP first, then the local fit.
 - Link to `docs/architecture/solution-overview.md` and `docs/architecture/sap-reference.md`.
 
 ## Out of scope

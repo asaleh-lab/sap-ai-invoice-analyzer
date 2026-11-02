@@ -1,6 +1,6 @@
 # Tool catalog
 
-The advisor calls these tools through functions the workbench passes in. The tool name is a project name. The SAP API column is the contract being simulated. Schemas use SAP field names only where [sap-reference.md](sap-reference.md) verified them. Properties marked **pending EDMX** stay out of the agent prompt until ticket 003 confirms them. If confirmation fails, the tool returns the field as absent and the finding is recorded as missing information.
+The advisor calls these tools through functions the workbench passes in. The tool name is a project name. The SAP API column is the contract being simulated. Field names follow the files in [metadata/](../../metadata/) and [sap-reference.md](sap-reference.md).
 
 Every tool the agent can call is read-only. Release and subsequent credit are not tools. They are investigation actions in ticket 007.
 
@@ -78,7 +78,7 @@ Local behavior: one header row and its PO-reference items. Amounts are decimal s
 | Operation simulated | `GET A_PurchaseOrder('{PurchaseOrder}')` with items expanded |
 | Purpose | Load ordered quantity and net price for the invoice item. |
 | Read or write | Read-only |
-| Documentation | Hub catalog, KBA 2928975, KBA 3218443. Item price fields pending EDMX. |
+| Documentation | Sandbox `$metadata`, Hub catalog 1.0.0, KBA 2928975, KBA 3218443. |
 
 Input:
 
@@ -108,7 +108,7 @@ Output:
 }
 ```
 
-`Supplier`, `CompanyCode`, `DocumentCurrency`, `OrderQuantity`, `NetPriceAmount`, `NetPriceQuantity`, and `Material` are pending EDMX. `PurchaseOrderQuantityUnit` is KBA-verified. The navigation name `to_PurchaseOrderItem` is the usual V2 name and is also pending EDMX. The adapter may rename the navigation to the EDMX name without changing the tool's external JSON, and the tool schema is what the agent sees.
+Those header and item names, and the navigation `to_PurchaseOrderItem`, are the names in [metadata/API_PURCHASEORDER_PROCESS_SRV.edmx](../../metadata/API_PURCHASEORDER_PROCESS_SRV.edmx). `NetPriceAmount` is decimal 12.3 and `NetPriceQuantity` is decimal 5.0.
 
 Errors: missing `PurchaseOrder` `BAD_REQUEST`; unknown order `NOT_FOUND`.
 

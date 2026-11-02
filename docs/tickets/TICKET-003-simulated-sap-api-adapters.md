@@ -39,7 +39,7 @@ Release, subsequent credit, events, the advisor graph, UI. Handlers are TypeScri
 - `calculateInvoiceVariance` loads the invoice, the purchase order, and the goods receipts itself. It does not trust amounts from the caller.
 - Decimal strings in the JSON output, as in the catalog examples.
 - Unknown keys return the catalog error object and HTTP 404. Missing arguments return HTTP 400.
-- If an EDMX file is added later, this ticket does not block on it. Pending field names stay as in the data model. Add a `docs/architecture/edmx-gaps.md` note only if a name in the catalog is found to be wrong while implementing. Do not silently rename a verified field.
+- Supplier invoice, purchase order, material document, and business partner names come from `metadata/`. If a name in the tool catalog disagrees with a file in `metadata/`, the file wins and the catalog is corrected in the same change.
 
 ## SAP documentation
 

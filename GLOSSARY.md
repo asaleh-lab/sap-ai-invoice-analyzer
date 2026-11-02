@@ -39,8 +39,8 @@ A supplier invoice posted as a credit, including cases that correct quantity, su
 _Avoid_: Subsequent credit
 
 **Investigation**:
-The application-owned case opened when a blocked-invoice event is accepted. It is not an SAP business object.
-_Avoid_: Invoice, workflow item, ticket
+The application-owned case for a supplier invoice whose payment block reason is set. It is not an SAP business object.
+_Avoid_: Invoice, blocked invoice, workflow item, ticket
 
 **Evidence**:
 A stored reference to a value returned by a simulated SAP read, including the API, entity, field, and value that support a finding.
