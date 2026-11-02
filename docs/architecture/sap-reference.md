@@ -194,7 +194,7 @@ How that maps onto this project:
 | `invc` entities | Application-owned investigations, evidence, findings, decisions, and the event inbox. |
 | `SimulatedS4Service` | Read projections of `sap.sim`, shaped like the OData reads the agent needs. |
 | `InvestigationService` | The workbench API. Projections of `invc`, plus the actions a person can approve. |
-| Agent tool routes | Read-only operations. They call the simulated services and return a trimmed JSON document. They are project APIs. |
+| Agent tool routes | `AgentToolService` at `/agent-tools`. Read-only functions. Each handler queries `sap.sim` through CAP and returns the trimmed JSON in the tool catalog. The advisor calls these functions and does not query the database. |
 
 The four service schemas and the supplier invoice event specification are in [metadata/](../../metadata/). They are local files. The app does not call the Hub, the sandbox, or a tenant to read them.
 

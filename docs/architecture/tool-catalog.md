@@ -186,7 +186,7 @@ Errors: missing supplier `BAD_REQUEST`. An empty array is success.
 | | |
 | --- | --- |
 | SAP API | `API_BUSINESS_PARTNER` |
-| Operation simulated | Read `A_BusinessPartner` for the supplier, the supplier role, one contact relationship, and one `EmailAddress` |
+| Operation simulated | Read `A_BusinessPartner` for the supplier, the supplier role, and one `A_AddressEmailAddress` |
 | Purpose | Show who would receive a supplier message. |
 | Read or write | Read-only |
 | Documentation | Hub catalog, KBA 3569467, KBA 3392200, SAP Developer Center tutorial for `A_AddressEmailAddress` |

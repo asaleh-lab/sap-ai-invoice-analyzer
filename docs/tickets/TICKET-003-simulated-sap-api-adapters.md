@@ -1,6 +1,6 @@
 # TICKET-003: Simulated SAP read APIs
 
-**Status:** ready-for-agent
+**Status:** done
 
 **Commit:** Finish this ticket, then commit its code-relevant files before the next ticket. One ticket, one commit. See `AGENTS.md`.
 
@@ -47,20 +47,20 @@ Supplier invoice, purchase order, material document, and business partner sectio
 
 ## Expected artifacts
 
-`srv/agent-tools.cds`, `srv/agent-tools.ts`, unit tests beside the handler.
+`srv/agent-tools.cds`, `srv/agent-tools.ts`, `test/agent-tools.test.ts`. The handlers query `sap.sim` through CAP. Callers, including the later advisor, use `/agent-tools` only.
 
 ## Acceptance criteria
 
-- [ ] `getSupplierInvoice` for `5100001001` / `2026` returns the PO reference item and payment block `A`.
-- [ ] `getPurchaseOrder` for `4500001001` returns net price `8.00` and order quantity `10`.
-- [ ] `getGoodsReceipts` for that item returns quantity `10`. The same call for invoice `5100001002`'s item returns quantity `8`.
-- [ ] `getSupplierInvoiceHistory` for `17300001` includes `5100000900` and the three blocked invoices, and does not require items in the payload.
-- [ ] `getSupplierBusinessPartner` returns the email `ap@helios-fasteners.example`.
-- [ ] `calculateInvoiceVariance` for `5100001001` returns `priceDifference` `20.00`, `quantityDifference` `0`, `comparable` true, and `grossAmountExcludedFromMatch` true.
-- [ ] Variance for `5100001002` returns quantity difference `2` (invoiced minus received) and price difference `0.00`.
-- [ ] Variance for `5100001003` returns both differences `0`.
-- [ ] Unknown invoice returns `NOT_FOUND`.
-- [ ] A goods-receipt query with no rows returns an empty `items` array and does not return `NOT_FOUND`.
+- [x] `getSupplierInvoice` for `5100001001` / `2026` returns the PO reference item and payment block `A`.
+- [x] `getPurchaseOrder` for `4500001001` returns net price `8.00` and order quantity `10`.
+- [x] `getGoodsReceipts` for that item returns quantity `10`. The same call for invoice `5100001002`'s item returns quantity `8`.
+- [x] `getSupplierInvoiceHistory` for `17300001` includes `5100000900` and the three blocked invoices, and does not require items in the payload.
+- [x] `getSupplierBusinessPartner` returns the email `ap@helios-fasteners.example`.
+- [x] `calculateInvoiceVariance` for `5100001001` returns `priceDifference` `20.00`, `quantityDifference` `0`, `comparable` true, and `grossAmountExcludedFromMatch` true.
+- [x] Variance for `5100001002` returns quantity difference `2` (invoiced minus received) and price difference `0.00`.
+- [x] Variance for `5100001003` returns both differences `0`.
+- [x] Unknown invoice returns `NOT_FOUND`.
+- [x] A goods-receipt query with no rows returns an empty `items` array and does not return `NOT_FOUND`.
 
 ## Test cases
 
