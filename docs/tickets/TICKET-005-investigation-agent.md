@@ -1,6 +1,6 @@
 # TICKET-005: Advisor module
 
-**Status:** ready-for-agent
+**Status:** done
 
 **Commit:** Finish this ticket, then commit its code-relevant files before the next ticket. One ticket, one commit. See `AGENTS.md`.
 
@@ -67,15 +67,15 @@ Tool catalog and the release versus subsequent-credit correction in [solution-ov
 
 ## Acceptance criteria
 
-- [ ] With an empty `LLM_API_KEY`, processing `5100001001` stores `post_subsequent_credit`, price difference `20.00`, quantity difference `0`, status `awaiting_review`.
-- [ ] `5100001002` stores `contact_supplier` and quantity difference `2`. It does not store `post_subsequent_credit` or `release_payment_block`.
-- [ ] `5100001003` stores `release_payment_block` and both differences `0`.
-- [ ] Each of those cases has at least one `fact` finding and one evidence row whose `api` is `API_SUPPLIERINVOICE_PROCESS_SRV` and whose `field` is `PaymentBlockingReason`.
-- [ ] The price case has evidence for `SupplierInvoiceItemAmount` and for the purchase order net price.
-- [ ] A recommendation payload that says `release_payment_block` for `5100001002` is refused and the case becomes `investigation_failed`.
-- [ ] No row in `sap.sim.SupplierInvoices` changes during this ticket.
-- [ ] The handler calls `investigate` without a pre-assembled invoice document. The test asserts the advisor requests the invoice tool.
-- [ ] A unit test calls `investigate` with fake tool functions. The advisor calls those functions and does not import `@sap/cds`.
+- [x] With an empty `LLM_API_KEY`, processing `5100001001` stores `post_subsequent_credit`, price difference `20.00`, quantity difference `0`, status `awaiting_review`.
+- [x] `5100001002` stores `contact_supplier` and quantity difference `2`. It does not store `post_subsequent_credit` or `release_payment_block`.
+- [x] `5100001003` stores `release_payment_block` and both differences `0`.
+- [x] Each of those cases has at least one `fact` finding and one evidence row whose `api` is `API_SUPPLIERINVOICE_PROCESS_SRV` and whose `field` is `PaymentBlockingReason`.
+- [x] The price case has evidence for `SupplierInvoiceItemAmount` and for the purchase order net price.
+- [x] A recommendation payload that says `release_payment_block` for `5100001002` is refused and the case becomes `investigation_failed`.
+- [x] No row in `sap.sim.SupplierInvoices` changes during this ticket.
+- [x] The handler calls `investigate` without a pre-assembled invoice document. The test asserts the advisor requests the invoice tool.
+- [x] A unit test calls `investigate` with fake tool functions. The advisor calls those functions and does not import `@sap/cds`.
 
 ## Test cases
 

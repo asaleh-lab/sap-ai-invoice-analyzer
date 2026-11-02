@@ -253,7 +253,7 @@ service InvestigationService @(path: '/workbench') {
   action postSubsequentCredit(investigationId: UUID, actor: String);
   action prepareSupplierContact(investigationId: UUID, actor: String);
   action dismissInvestigation(investigationId: UUID, actor: String, reason: String);
-  action retryInvestigation(investigationId: UUID);
+  action retryInvestigation(ID: UUID);
 }
 
 service AgentToolService @(path: '/agent-tools') {

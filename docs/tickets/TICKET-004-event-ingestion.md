@@ -18,7 +18,7 @@ As the demo publisher, I want to POST a supplier invoice created event. The work
 
 ## Context
 
-Contract: [event-contracts.md](../architecture/event-contracts.md). The event identifies the supplier invoice. The consumer calls `getSupplierInvoice`. When `PaymentBlockingReason` is set, that supplier invoice is blocked and the investigation copies that value into `paymentBlockingReason`. When the reason is empty, or the invoice is missing, the inbox row is rejected and no case opens. The agent is not called yet. New cases stay in status `open`.
+Contract: [event-contracts.md](../architecture/event-contracts.md). The event identifies the supplier invoice. The consumer calls `getSupplierInvoice`. When `PaymentBlockingReason` is set, that supplier invoice is blocked and the investigation copies that value into `paymentBlockingReason`. When the reason is empty, or the invoice is missing, the inbox row is rejected and no case opens. Ticket 005 runs the advisor in the same request. A successful case leaves `awaiting_review` before the inbox row is marked `processed`. This ticket only required the case to open.
 
 ## Scope
 
