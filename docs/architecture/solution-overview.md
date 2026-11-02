@@ -37,7 +37,7 @@ The publisher is a script or a button that POSTs the CloudEvent onto the simulat
 | CAP Node.js app, TypeScript handlers | CDS model, SQLite, simulated SAP reads, simulated Event Mesh inbox, investigation API, approved writes, static host for the UI in Compose |
 | SQLite file | Simulated documents, investigations, inbox. File on a volume so a restart keeps cases. |
 | Advisor module, TypeScript and LangGraph.js | Inside the CAP app. Chooses tools the workbench passes in, and returns a recommendation. Does not import the CDS model. Scripted policy when `LLM_API_KEY` is empty. |
-| React workbench | Pending list, investigation detail, history and a small dashboard |
+| Fiori elements workbench | List report of pending cases, object page for one investigation, history and a small dashboard |
 | Demo publisher | Sends the three sample events to the simulated topic |
 
 No real Event Mesh broker, no second database, no second process, no retrieval index. The whole demo is sized for two evenings.
@@ -96,14 +96,29 @@ Accept / proceed does not mean "post the invoice" and does not mean "pay the sup
 
 | Choice | Why |
 | --- | --- |
-| Node.js and TypeScript | One language for the CAP app, the advisor module, and the UI. |
+| Node.js 26 LTS and TypeScript 7 | One language for the CAP app and the advisor module. 26.13.0 is the current LTS. Node 20 is end of life and is not supported by CAP 10. |
 | CAP on Node.js | Local SQLite path in the CAP docs, CDS services, OData for the UI. Simulated documents are queried here. |
 | SAP Cloud SDK | Not a dependency. There is no tenant and no service metadata for it to call. See [ADR 0006](../adr/0006-cap-queries-not-cloud-sdk.md). |
 | SQLite file | One file, no server, matches CAP's local guide. In-memory SQLite stays available for unit tests. |
 | LangGraph.js inside the advisor module | Tool calling stays out of the invoice handlers. The workbench passes the tools in. |
-| React | Custom three-pane workbench. Fiori elements would be the SAP UI technology and would spend the evenings on floorplans instead of the investigation flow. |
+| Fiori elements | The SAP UI for this workbench. A list report and an object page on `InvestigationService`, served by the CAP app. |
 | OpenAI-compatible HTTP | `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`. Empty key selects the scripted policy. |
-| Docker Compose | One app and a SQLite volume |
+| Docker Compose | One app and a SQLite volume. The image uses Node.js 26 LTS. |
+
+Versions checked on npm on 2 November 2026. Pin these in `package.json` when the ticket that adds the dependency lands.
+
+| Package | Version |
+| --- | --- |
+| Node.js | 26.13.0 LTS |
+| `typescript` | 7.0.2 |
+| `@sap/cds` | 10.2.2 |
+| `@sap/cds-dk` | 10.2.0 |
+| `@cap-js/sqlite` | 3.1.2 |
+| `@langchain/langgraph` | 1.6.0 |
+| SAPUI5 / Fiori elements | 1.144 |
+| `@sap/ux-specification` | 1.144.13 |
+| `@sap/ux-ui5-tooling` | 1.34.0 |
+| `@ui5/cli` | 4.0.71 |
 
 ## Architectural decisions
 

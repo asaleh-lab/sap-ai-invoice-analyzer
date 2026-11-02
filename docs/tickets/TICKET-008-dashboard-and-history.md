@@ -44,7 +44,7 @@ None beyond the outcome names already defined. Do not describe a closed investig
 
 ## Expected artifacts
 
-Summary function, history view in the React app, tests for counts after the three actions.
+Summary function, Fiori elements history list, tests for counts after the three actions.
 
 ## Acceptance criteria
 

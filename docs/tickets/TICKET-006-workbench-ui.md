@@ -22,7 +22,7 @@ Actions themselves are ticket 007. This ticket renders the buttons disabled, or 
 
 ## Scope
 
-- React UI in `app/`, served by the CAP app in Compose and by Vite in local development with a proxy to CAP.
+- Fiori elements app in `app/`, SAPUI5 1.144, served by the CAP app at `http://localhost:4004`. List report for the pending queue and object page for one investigation. Versions are in [solution-overview.md](../architecture/solution-overview.md).
 - Pending list columns: supplier name (from the business partner read or from a field expanded via the investigation's invoicing party), supplier invoice reference, gross amount, currency, payment block reason, calculated block category, investigation status.
 - Block category is derived in the UI or by a small read-only function from the stored differences:
   - quantity difference not zero → `quantity`
@@ -40,7 +40,7 @@ Release, subsequent credit, dismiss, email draft persistence, dashboard charts, 
 
 ## Implementation requirements
 
-- Load data from `InvestigationService` OData. Do not hardcode the three outcomes as the only UI state. The seed scenarios are fixtures, not a switch in the React code.
+- Load data from `InvestigationService` OData through Fiori elements annotations. Do not hardcode the three outcomes as the only UI state. The seed scenarios are fixtures, not a filter baked into the floorplan.
 - Supplier name: either expand a convenience projection added in this ticket (`supplierName` filled when the case is created) or call the simulated business partner from the UI. Prefer storing `supplierName` on the investigation at creation time so the list is one query. That is a small additive field on `invc.Investigations`, set in the consumer from `BusinessPartnerName`.
 - Currency and amount formatted with the document currency code. No FX.
 - The page title states the data is simulated S/4HANA Cloud data.
@@ -52,7 +52,7 @@ Field meanings in [sap-reference.md](../architecture/sap-reference.md). Do not r
 
 ## Expected artifacts
 
-`app/` React source, CAP static serving or a dev proxy, list and detail components, the sample-event button.
+`app/` Fiori elements app, list report and object page annotations, the sample-event action.
 
 ## Acceptance criteria
 
@@ -76,4 +76,4 @@ The workbench is visible. The financial action is still a later ticket, so this 
 
 ## Risks
 
-Vite proxy and CAP static hosting disagree on the base path. Pick one URL in Compose (`http://localhost:4004`) and test the list there.
+The list report and the CAP service must share one URL in Compose (`http://localhost:4004`). Test the list there.

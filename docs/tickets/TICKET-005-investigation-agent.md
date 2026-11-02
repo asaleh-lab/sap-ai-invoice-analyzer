@@ -34,7 +34,7 @@ Policy and finding types: [tool-catalog.md](../architecture/tool-catalog.md). Th
 ```
 
 - `tools` holds the six read functions from ticket 003. The invoice document is not an argument. The advisor module does not import `@sap/cds` or the invoice model.
-- The advisor is TypeScript and uses LangGraph.js. The graph may call the injected tools in a loop.
+- The advisor is TypeScript and uses `@langchain/langgraph` 1.6.0. The graph may call the injected tools in a loop. Versions are in [solution-overview.md](../architecture/solution-overview.md).
 - Scripted policy when `LLM_API_KEY` is empty, implementing the catalog rules:
   - `5100001001` → `post_subsequent_credit`
   - `5100001002` → `contact_supplier`

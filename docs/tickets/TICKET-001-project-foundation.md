@@ -37,7 +37,7 @@ CDS entities, seed data, events, UI, the real tool-calling loop.
 
 ## Implementation requirements
 
-- Node 20 or newer. CAP current stable. TypeScript for the CAP handlers, the advisor module, and the later UI.
+- Node.js 26 LTS (26.13.0). CAP 10 (`@sap/cds` 10.2.2, `@sap/cds-dk` 10.2.0, `@cap-js/sqlite` 3.1.2). TypeScript 7.0.2 for the CAP handlers and the advisor module. The later UI is Fiori elements. Versions are the stables recorded in [solution-overview.md](../architecture/solution-overview.md).
 - The CAP `package.json` name is `sap-ai-invoice-analyzer`.
 - Compose runs that one app.
 - Pin the dependency versions chosen on the day of implementation.
@@ -50,7 +50,7 @@ None. Local CAP SQLite guide: https://cap.cloud.sap/docs/guides/databases/sqlite
 
 ## Expected artifacts
 
-`package.json`, `tsconfig.json`, `db/` placeholder, `srv/` placeholder, `app/` placeholder for the later UI, `advisor/`, `docker-compose.yml`, `.env.example`, `.gitignore`. The advisor lives in the same `package.json`.
+`package.json`, `tsconfig.json`, `db/` placeholder, `srv/` placeholder, `app/` placeholder for the later Fiori elements UI, `advisor/`, `docker-compose.yml`, `.env.example`, `.gitignore`. The advisor lives in the same `package.json`.
 
 ## Acceptance criteria
 
