@@ -47,9 +47,15 @@ async function readSupplierInvoice(req: ToolRequest): Promise<string | void> {
   const supplierInvoice = required(req, "SupplierInvoice");
   const fiscalYear = required(req, "FiscalYear");
   if (!supplierInvoice || !fiscalYear) return;
+  const document = await readSupplierInvoiceDocument(supplierInvoice, fiscalYear);
+  if (!document) return notFound(req, `Supplier invoice ${supplierInvoice}/${fiscalYear} was not found in the simulated S/4 data.`);
+  return json(document);
+}
+
+export async function readSupplierInvoiceDocument(supplierInvoice: string, fiscalYear: string): Promise<Row | null> {
   const row = await loadInvoice(supplierInvoice, fiscalYear);
-  if (!row) return notFound(req, `Supplier invoice ${supplierInvoice}/${fiscalYear} was not found in the simulated S/4 data.`);
-  return json(invoiceDocument(row, true));
+  if (!row) return null;
+  return invoiceDocument(row, true);
 }
 
 // API_PURCHASEORDER_PROCESS_SRV: GET A_PurchaseOrder with to_PurchaseOrderItem.
