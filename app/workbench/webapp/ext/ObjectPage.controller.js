@@ -1,8 +1,8 @@
-sap.ui.define([], function () {
+sap.ui.define(["sap/ui/core/mvc/ControllerExtension"], function (ControllerExtension) {
   "use strict";
-  return {
+  return ControllerExtension.extend("workbench.ext.ObjectPage", {
     retryInvestigation: async function () {
-      const context = this.getBindingContext();
+      const context = this.getView().getBindingContext();
       const id = context && context.getProperty("ID");
       if (!id || context.getProperty("status") !== "investigation_failed") return;
       await fetch("/workbench/retryInvestigation", {
@@ -10,7 +10,7 @@ sap.ui.define([], function () {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ ID: id }),
       });
-      if (context.requestSideEffects) await context.requestSideEffects(["*"]);
+      await context.requestSideEffects(["*"]);
     },
-  };
+  });
 });

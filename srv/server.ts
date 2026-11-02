@@ -12,7 +12,7 @@ cds.on("bootstrap", (app) => {
     res.json({ status: "ok", mode: "simulated-s4" });
   });
   app.get("/workbench-ui", (_req, res) => {
-    res.redirect("/workbench-ui/index.html");
+    res.redirect("/workbench-ui/test/flpSandbox.html");
   });
   app.get("/workbench-ui/*file", (req, res) => {
     const relative = decodeURIComponent(req.path.replace(/^\/workbench-ui\/?/, ""));

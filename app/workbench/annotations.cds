@@ -1,6 +1,9 @@
 using InvestigationService from '../../srv/workbench';
 
 annotate InvestigationService.Investigations with @(
+  Capabilities.InsertRestrictions: { Insertable: false },
+  Capabilities.UpdateRestrictions: { Updatable: false },
+  Capabilities.DeleteRestrictions: { Deletable: false },
   UI.SelectionPresentationVariant: {
     Text: 'Pending',
     SelectionVariant: {

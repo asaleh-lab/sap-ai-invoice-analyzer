@@ -1,6 +1,6 @@
-sap.ui.define([], function () {
+sap.ui.define(["sap/ui/core/mvc/ControllerExtension"], function (ControllerExtension) {
   "use strict";
-  return {
+  return ControllerExtension.extend("workbench.ext.ListReport", {
     sendSampleEvents: async function () {
       const response = await fetch("sample-events.json");
       const events = await response.json();
@@ -11,8 +11,8 @@ sap.ui.define([], function () {
           body: JSON.stringify(event),
         });
       }
-      const extension = this.base && this.base.getExtensionAPI ? this.base.getExtensionAPI() : null;
-      if (extension && extension.refresh) extension.refresh();
+      const extension = this.base.getExtensionAPI();
+      if (extension.refresh) extension.refresh();
     },
-  };
+  });
 });

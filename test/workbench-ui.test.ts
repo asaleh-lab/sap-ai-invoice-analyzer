@@ -19,15 +19,20 @@ test("pending workbench lists simulated cases and hides retry until a failure", 
   try {
     await ready(child);
 
+    const controller = await fetch(`${base}/workbench-ui/ext/ListReport.controller.js`);
+    assert.equal(controller.status, 200);
     const page = await fetch(`${base}/workbench-ui/index.html`);
     assert.equal(page.status, 200);
     const html = await page.text();
     assert.match(html, /simulated S\/4HANA Cloud data/);
+    const sandbox = await fetch(`${base}/workbench-ui/test/flpSandbox.html`);
+    assert.equal(sandbox.status, 200);
+    assert.match(await sandbox.text(), /createRenderer/);
     const manifest = await (await fetch(`${base}/workbench-ui/manifest.json`)).json();
-    const list = manifest["sap.ui5"].routing.targets.InvestigationsList.settings;
+    const list = manifest["sap.ui5"].routing.targets.InvestigationsList.options.settings;
     assert.match(list.content.table.noData.text, /Send sample events/);
     assert.equal(list.content.header.actions.retryInvestigation, undefined);
-    const objectPage = manifest["sap.ui5"].routing.targets.InvestigationsObjectPage.settings;
+    const objectPage = manifest["sap.ui5"].routing.targets.InvestigationsObjectPage.options.settings;
     assert.equal(objectPage.content.header.actions.retryInvestigation.visible, "{= ${status} === 'investigation_failed' }");
 
     const empty = await listPending();

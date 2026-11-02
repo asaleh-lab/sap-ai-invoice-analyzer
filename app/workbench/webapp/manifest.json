@@ -14,44 +14,81 @@
     }
   },
   "sap.ui5": {
+    "flexEnabled": false,
     "dependencies": {
       "minUI5Version": "1.144.0",
       "libs": {
+        "sap.m": {},
+        "sap.ui.core": {},
+        "sap.f": {},
         "sap.fe.templates": {}
       }
+    },
+    "rootView": {
+      "viewName": "sap.fe.core.rootView.Fcl",
+      "type": "XML",
+      "async": true,
+      "id": "appRootView"
     },
     "models": {
       "": {
         "dataSource": "main",
         "preload": true,
-        "settings": { "operationMode": "Server", "autoExpandSelect": true }
+        "settings": {
+          "synchronizationMode": "None",
+          "operationMode": "Server",
+          "autoExpandSelect": true,
+          "earlyRequests": true
+        }
       }
     },
     "routing": {
+      "config": {
+        "routerClass": "sap.f.routing.Router",
+        "flexibleColumnLayout": {
+          "defaultTwoColumnLayoutType": "TwoColumnsMidExpanded",
+          "defaultThreeColumnLayoutType": "ThreeColumnsMidExpanded"
+        }
+      },
       "routes": [
         { "pattern": ":?query:", "name": "InvestigationsList", "target": "InvestigationsList" },
-        { "pattern": "Investigations({key}):?query:", "name": "InvestigationsObjectPage", "target": "InvestigationsObjectPage" }
+        {
+          "pattern": "Investigations({key}):?query:",
+          "name": "InvestigationsObjectPage",
+          "target": ["InvestigationsList", "InvestigationsObjectPage"]
+        }
       ],
       "targets": {
         "InvestigationsList": {
           "type": "Component",
           "id": "InvestigationsList",
           "name": "sap.fe.templates.ListReport",
-          "options": { "settings": { "contextPath": "/Investigations" } },
           "controlAggregation": "beginColumnPages",
           "contextPattern": "",
-          "settings": {
-            "content": {
-              "header": {
-                "actions": {
-                  "sendSampleEvents": {
-                    "press": "workbench.ext.ListReport.sendSampleEvents",
-                    "text": "Send sample events"
-                  }
+          "options": {
+            "settings": {
+              "contextPath": "/Investigations",
+              "initialLoad": true,
+              "variantManagement": "None",
+              "navigation": {
+                "Investigations": {
+                  "detail": { "route": "InvestigationsObjectPage" }
                 }
               },
-              "table": {
-                "noData": { "text": "No cases are waiting. Choose Send sample events, or POST the three sample CloudEvents to /simulated-events." }
+              "content": {
+                "header": {
+                  "actions": {
+                    "sendSampleEvents": {
+                      "press": "workbench.ext.ListReport.sendSampleEvents",
+                      "text": "Send sample events"
+                    }
+                  }
+                },
+                "table": {
+                  "noData": {
+                    "text": "No cases are waiting. Choose Send sample events, or POST the three sample CloudEvents to /simulated-events."
+                  }
+                }
               }
             }
           }
@@ -60,16 +97,18 @@
           "type": "Component",
           "id": "InvestigationsObjectPage",
           "name": "sap.fe.templates.ObjectPage",
-          "options": { "settings": { "contextPath": "/Investigations" } },
           "controlAggregation": "midColumnPages",
-          "settings": {
-            "content": {
-              "header": {
-                "actions": {
-                  "retryInvestigation": {
-                    "press": "workbench.ext.ObjectPage.retryInvestigation",
-                    "text": "Retry",
-                    "visible": "{= ${status} === 'investigation_failed' }"
+          "options": {
+            "settings": {
+              "contextPath": "/Investigations",
+              "content": {
+                "header": {
+                  "actions": {
+                    "retryInvestigation": {
+                      "press": "workbench.ext.ObjectPage.retryInvestigation",
+                      "text": "Retry",
+                      "visible": "{= ${status} === 'investigation_failed' }"
+                    }
                   }
                 }
               }
@@ -94,5 +133,9 @@
   "sap.ui": {
     "technology": "UI5",
     "fullWidth": true
+  },
+  "sap.fiori": {
+    "registrationIds": [],
+    "archeType": "transactional"
   }
 }

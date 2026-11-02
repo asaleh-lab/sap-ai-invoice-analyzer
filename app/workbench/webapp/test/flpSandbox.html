@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pending investigations (simulated S/4HANA Cloud data)</title>
+    <script>
+      window["sap-ushell-config"] = {
+        defaultRenderer: "fiori2",
+        renderers: {
+          fiori2: {
+            componentData: {
+              config: {
+                search: "hidden",
+                rootIntent: "workbench-display",
+              },
+            },
+          },
+        },
+        applications: {
+          "workbench-display": {
+            title: "Pending investigations (simulated S/4HANA Cloud data)",
+            description: "Simulated S/4HANA Cloud invoice investigations",
+            additionalInformation: "SAPUI5.Component=workbench",
+            applicationType: "URL",
+            url: "../",
+            navigationMode: "embedded",
+          },
+        },
+      };
+    </script>
+    <script
+      id="sap-ushell-bootstrap"
+      src="https://ui5.sap.com/1.144.0/test-resources/sap/ushell/bootstrap/sandbox.js"
+    ></script>
+    <script
+      id="sap-ui-bootstrap"
+      src="https://ui5.sap.com/1.144.0/resources/sap-ui-core.js"
+      data-sap-ui-theme="sap_horizon"
+      data-sap-ui-async="true"
+      data-sap-ui-compatVersion="edge"
+      data-sap-ui-language="en"
+      data-sap-ui-resourceroots='{"workbench": "../"}'
+      data-sap-ui-frameOptions="trusted"
+    ></script>
+    <script>
+      sap.ui.require(["sap/ui/core/Core"], function (Core) {
+        Core.ready().then(function () {
+          sap.ushell.Container.createRenderer(undefined, true).then(function (renderer) {
+            renderer.placeAt("content");
+          });
+        });
+      });
+    </script>
+  </head>
+  <body class="sapUiBody" id="content"></body>
+</html>

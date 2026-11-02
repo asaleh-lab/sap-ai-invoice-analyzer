@@ -2,7 +2,17 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pending investigations (simulated S/4HANA Cloud data)</title>
+    <style>
+      html,
+      body,
+      body > div,
+      #content,
+      #content-uiarea {
+        height: 100%;
+      }
+    </style>
     <script
       id="sap-ui-bootstrap"
       src="https://ui5.sap.com/1.144.0/resources/sap-ui-core.js"
@@ -14,12 +24,13 @@
       data-sap-ui-frameOptions="trusted"
     ></script>
   </head>
-  <body class="sapUiBody">
+  <body class="sapUiBody sapUiSizeCompact" id="content">
     <div
       data-sap-ui-component
       data-name="workbench"
-      data-id="workbench"
+      data-id="container"
       data-settings='{"id": "workbench"}'
+      data-handle-validation="true"
     ></div>
   </body>
 </html>
