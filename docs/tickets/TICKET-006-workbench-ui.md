@@ -1,6 +1,6 @@
 # TICKET-006: Pending investigations and detail view
 
-**Status:** ready-for-agent
+**Status:** done
 
 **Commit:** Finish this ticket, then commit its code-relevant files before the next ticket. One ticket, one commit. See `AGENTS.md`.
 
@@ -56,13 +56,13 @@ Field meanings in [sap-reference.md](../architecture/sap-reference.md). Do not r
 
 ## Acceptance criteria
 
-- [ ] After the three sample events are processed, the pending list shows three rows with supplier Helios Fasteners GmbH, the three references, amounts `119.00`, `95.20`, and `95.20`, currency `EUR`, payment block `A`, and statuses `awaiting_review`.
-- [ ] Block categories are `price`, `quantity`, and `manual block` respectively.
-- [ ] Opening `5100001001` shows narrative, price difference `20.00`, and an evidence row for `SupplierInvoiceItemAmount`.
-- [ ] Opening `5100001002` shows quantity difference `2` and does not show a recommendation of release or subsequent credit.
-- [ ] The simulated-data notice is visible on the list.
-- [ ] Retry is available on `investigation_failed` and absent on `awaiting_review`.
-- [ ] An empty database shows the empty state rather than a blank table.
+- [x] After the three sample events are processed, the pending list shows three rows with supplier Helios Fasteners GmbH, the three references, amounts `119.00`, `95.20`, and `95.20`, currency `EUR`, payment block `A`, and statuses `awaiting_review`.
+- [x] Block categories are `price`, `quantity`, and `manual block` respectively.
+- [x] Opening `5100001001` shows narrative, price difference `20.00`, and an evidence row for `SupplierInvoiceItemAmount`.
+- [x] Opening `5100001002` shows quantity difference `2` and does not show a recommendation of release or subsequent credit.
+- [x] The simulated-data notice is visible on the list.
+- [x] Retry is available on `investigation_failed` and absent on `awaiting_review`.
+- [x] An empty database shows the empty state rather than a blank table.
 
 ## Test cases
 

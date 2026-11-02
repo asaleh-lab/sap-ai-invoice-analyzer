@@ -1,0 +1,98 @@
+{
+  "_version": "1.65.0",
+  "sap.app": {
+    "id": "workbench",
+    "type": "application",
+    "title": "Pending investigations (simulated S/4HANA Cloud data)",
+    "applicationVersion": { "version": "0.1.0" },
+    "dataSources": {
+      "main": {
+        "uri": "/workbench/",
+        "type": "OData",
+        "settings": { "odataVersion": "4.0" }
+      }
+    }
+  },
+  "sap.ui5": {
+    "dependencies": {
+      "minUI5Version": "1.144.0",
+      "libs": {
+        "sap.fe.templates": {}
+      }
+    },
+    "models": {
+      "": {
+        "dataSource": "main",
+        "preload": true,
+        "settings": { "operationMode": "Server", "autoExpandSelect": true }
+      }
+    },
+    "routing": {
+      "routes": [
+        { "pattern": ":?query:", "name": "InvestigationsList", "target": "InvestigationsList" },
+        { "pattern": "Investigations({key}):?query:", "name": "InvestigationsObjectPage", "target": "InvestigationsObjectPage" }
+      ],
+      "targets": {
+        "InvestigationsList": {
+          "type": "Component",
+          "id": "InvestigationsList",
+          "name": "sap.fe.templates.ListReport",
+          "options": { "settings": { "contextPath": "/Investigations" } },
+          "controlAggregation": "beginColumnPages",
+          "contextPattern": "",
+          "settings": {
+            "content": {
+              "header": {
+                "actions": {
+                  "sendSampleEvents": {
+                    "press": "workbench.ext.ListReport.sendSampleEvents",
+                    "text": "Send sample events"
+                  }
+                }
+              },
+              "table": {
+                "noData": { "text": "No cases are waiting. Choose Send sample events, or POST the three sample CloudEvents to /simulated-events." }
+              }
+            }
+          }
+        },
+        "InvestigationsObjectPage": {
+          "type": "Component",
+          "id": "InvestigationsObjectPage",
+          "name": "sap.fe.templates.ObjectPage",
+          "options": { "settings": { "contextPath": "/Investigations" } },
+          "controlAggregation": "midColumnPages",
+          "settings": {
+            "content": {
+              "header": {
+                "actions": {
+                  "retryInvestigation": {
+                    "press": "workbench.ext.ObjectPage.retryInvestigation",
+                    "text": "Retry",
+                    "visible": "{= ${status} === 'investigation_failed' }"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "extends": {
+      "extensions": {
+        "sap.ui.controllerExtensions": {
+          "sap.fe.templates.ListReport.ListReportController": {
+            "controllerName": "workbench.ext.ListReport"
+          },
+          "sap.fe.templates.ObjectPage.ObjectPageController": {
+            "controllerName": "workbench.ext.ObjectPage"
+          }
+        }
+      }
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "fullWidth": true
+  }
+}

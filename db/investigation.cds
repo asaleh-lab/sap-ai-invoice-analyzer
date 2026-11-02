@@ -49,6 +49,7 @@ entity Investigations {
   supplierInvoice : String(10);
   fiscalYear      : String(4);
   invoicingParty  : String(10);
+  supplierName : String(81);
   supplierInvoiceIdByInvoicingParty : String(16);
   documentCurrency : String(5);
   invoiceGrossAmount : Decimal(13, 2);

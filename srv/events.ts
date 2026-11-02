@@ -170,6 +170,7 @@ async function consume(id: string): Promise<void> {
     supplierInvoice,
     fiscalYear,
     invoicingParty: text(invoice.InvoicingParty),
+    supplierName: await supplierName(text(invoice.InvoicingParty)),
     supplierInvoiceIdByInvoicingParty: text(invoice.SupplierInvoiceIDByInvcgParty),
     documentCurrency: text(invoice.DocumentCurrency),
     invoiceGrossAmount: Number(invoice.InvoiceGrossAmount),
@@ -180,6 +181,11 @@ async function consume(id: string): Promise<void> {
   await investigateCase(investigationId, supplierInvoice, fiscalYear);
   await UPDATE("invc.EventInbox").set({ status: "processed", investigation_ID: investigationId }).where({ id });
   log.info(id, "processed");
+}
+
+async function supplierName(invoicingParty: string): Promise<string> {
+  const partner = (await SELECT.one.from("sap.sim.BusinessPartners").where({ Supplier: invoicingParty })) as Row | null;
+  return text(partner?.BusinessPartnerName);
 }
 
 function structuralProblem(body: Row): boolean {

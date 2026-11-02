@@ -1,10 +1,15 @@
 declare module "@sap/cds" {
   interface HealthResponse {
-    json(body: { status: string; mode: string }): void;
+    json(body: unknown): void;
+    redirect(url: string): void;
+    status(code: number): HealthResponse;
+    type(ext: string): void;
+    write(chunk: string | Uint8Array): void;
+    end(): void;
   }
 
   interface BootstrappedApp {
-    get(path: string, handler: (req: unknown, res: HealthResponse) => void): void;
+    get(path: string, handler: (req: { path: string }, res: HealthResponse) => void): void;
   }
 
   interface Cds {

@@ -1,0 +1,32 @@
+[
+  {
+    "specversion": "1.0",
+    "id": "sample-5100001001",
+    "source": "local/demo/simulated-s4",
+    "type": "sap.s4.beh.supplierinvoice.v1.SupplierInvoice.Created.v1",
+    "time": "2026-11-02T09:15:00Z",
+    "datacontenttype": "application/json",
+    "subject": "5100001001/2026",
+    "data": { "SupplierInvoice": "5100001001", "FiscalYear": "2026", "SupplierInvoiceFiscalYear": "2026" }
+  },
+  {
+    "specversion": "1.0",
+    "id": "sample-5100001002",
+    "source": "local/demo/simulated-s4",
+    "type": "sap.s4.beh.supplierinvoice.v1.SupplierInvoice.Created.v1",
+    "time": "2026-11-02T09:16:00Z",
+    "datacontenttype": "application/json",
+    "subject": "5100001002/2026",
+    "data": { "SupplierInvoice": "5100001002", "FiscalYear": "2026", "SupplierInvoiceFiscalYear": "2026" }
+  },
+  {
+    "specversion": "1.0",
+    "id": "sample-5100001003",
+    "source": "local/demo/simulated-s4",
+    "type": "sap.s4.beh.supplierinvoice.v1.SupplierInvoice.Created.v1",
+    "time": "2026-11-02T09:17:00Z",
+    "datacontenttype": "application/json",
+    "subject": "5100001003/2026",
+    "data": { "SupplierInvoice": "5100001003", "FiscalYear": "2026", "SupplierInvoiceFiscalYear": "2026" }
+  }
+]

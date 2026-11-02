@@ -158,6 +158,7 @@ entity Investigations {
   supplierInvoice : String(10);
   fiscalYear      : String(4);
   invoicingParty  : String(10);
+  supplierName : String(81);
   supplierInvoiceIdByInvoicingParty : String(16);
   documentCurrency : String(5);
   invoiceGrossAmount : Decimal(13, 2);
@@ -208,7 +209,7 @@ entity Decisions {
 }
 ```
 
-`Investigations` copies the header facts it shows on the list so the list does not join the simulated invoice on every row. The event consumer copies them from the supplier invoice read when it opens the case. The detail view still loads the live simulated invoice so a later write is visible.
+`Investigations` copies the header facts it shows on the list so the list does not join the simulated invoice on every row. The event consumer copies them from the supplier invoice read when it opens the case, and copies `supplierName` from `BusinessPartnerName` on the invoicing party. The detail view still loads the live simulated invoice so a later write is visible. `blockCategory` is not stored. The workbench projection calculates it from the stored differences: a non-zero quantity difference is `quantity`, an absolute price difference above `projectTolerance` is `price`, both differences zero is `manual block`, and a missing difference is `unresolved`.
 
 One open investigation per supplier invoice and fiscal year. "Open" means status is not `closed`. The consumer checks that before insert. There is no partial unique index. SQLite would need one, and CAP's model does not express it, so the service keeps the rule.
 
