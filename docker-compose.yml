@@ -1,0 +1,13 @@
+services:
+  app:
+    build: .
+    ports:
+      - "${PORT:-4004}:4004"
+    environment:
+      PORT: "4004"
+      cds_requires_db_credentials_url: /data/db.sqlite
+    volumes:
+      - sqlite:/data
+
+volumes:
+  sqlite:
