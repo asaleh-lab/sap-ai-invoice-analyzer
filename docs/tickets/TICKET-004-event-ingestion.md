@@ -1,6 +1,6 @@
 # TICKET-004: Event ingestion and investigation case
 
-**Status:** ready-for-agent
+**Status:** done
 
 **Commit:** Finish this ticket, then commit its code-relevant files before the next ticket. One ticket, one commit. See `AGENTS.md`.
 
@@ -52,16 +52,16 @@ Event section of [sap-reference.md](../architecture/sap-reference.md). The accep
 
 ## Acceptance criteria
 
-- [ ] POST of the sample CloudEvent for `5100001001` / `2026` creates one investigation in `open`, and the inbox status becomes `processed`.
-- [ ] The investigation shows invoicing party `17300001`, currency `EUR`, gross `119.00`, payment block `A`, and supplier reference `HF-2026-441`.
-- [ ] Repeating the same `id` returns the duplicate outcome and does not insert a second investigation.
-- [ ] A new id for `5100001001` while that case is open returns `duplicate_open_case` and still one investigation.
-- [ ] An unknown invoice id returns inbox `rejected` and no investigation.
-- [ ] A well-formed created event for `5100000900` returns `rejected` and no investigation, because the invoice read shows an empty `PaymentBlockingReason`.
-- [ ] The investigation for `5100001001` stores payment block reason `A` taken from that invoice read.
-- [ ] A body without `data.FiscalYear` is `invalid`.
-- [ ] A type other than `sap.s4.beh.supplierinvoice.v1.SupplierInvoice.Created.v1` is `invalid` and does not open a case. Document that in the handler comment.
-- [ ] Restarting the process does not drop the inbox row when the SQLite file path is used.
+- [x] POST of the sample CloudEvent for `5100001001` / `2026` creates one investigation in `open`, and the inbox status becomes `processed`.
+- [x] The investigation shows invoicing party `17300001`, currency `EUR`, gross `119.00`, payment block `A`, and supplier reference `HF-2026-441`.
+- [x] Repeating the same `id` returns the duplicate outcome and does not insert a second investigation.
+- [x] A new id for `5100001001` while that case is open returns `duplicate_open_case` and still one investigation.
+- [x] An unknown invoice id returns inbox `rejected` and no investigation.
+- [x] A well-formed created event for `5100000900` returns `rejected` and no investigation, because the invoice read shows an empty `PaymentBlockingReason`.
+- [x] The investigation for `5100001001` stores payment block reason `A` taken from that invoice read.
+- [x] A body without `data.FiscalYear` is `invalid`.
+- [x] A type other than `sap.s4.beh.supplierinvoice.v1.SupplierInvoice.Created.v1` is `invalid` and does not open a case. Document that in the handler comment.
+- [x] Restarting the process does not drop the inbox row when the SQLite file path is used.
 
 ## Test cases
 

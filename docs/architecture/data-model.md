@@ -208,9 +208,9 @@ entity Decisions {
 }
 ```
 
-`Investigations` copies the header facts it shows on the list so the list does not join the simulated invoice on every row. Those copies are taken from the tool response at investigation time. The detail view still loads the live simulated invoice so a later write is visible.
+`Investigations` copies the header facts it shows on the list so the list does not join the simulated invoice on every row. The event consumer copies them from the supplier invoice read when it opens the case. The detail view still loads the live simulated invoice so a later write is visible.
 
-One open investigation per supplier invoice and fiscal year. "Open" means status is not `closed`. The inbox enforces that. A partial unique index is the implementation note in ticket 004, because SQLite partial indexes need a check that CAP's model can express the same rule in service code if the database cannot.
+One open investigation per supplier invoice and fiscal year. "Open" means status is not `closed`. The consumer checks that before insert. There is no partial unique index. SQLite would need one, and CAP's model does not express it, so the service keeps the rule.
 
 ## Status and who may change it
 
