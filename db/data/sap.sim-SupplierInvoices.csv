@@ -1,0 +1,5 @@
+SupplierInvoice;FiscalYear;CompanyCode;DocumentDate;PostingDate;InvoicingParty;SupplierInvoiceIDByInvcgParty;DocumentCurrency;InvoiceGrossAmount;PaymentBlockingReason;SupplierInvoiceStatus;SupplierInvoiceIsCreditMemo;TaxIsCalculatedAutomatically
+5100001001;2026;1010;2026-10-15;2026-10-15;17300001;HF-2026-441;EUR;119.000;A;5;;true
+5100001002;2026;1010;2026-10-16;2026-10-16;17300001;HF-2026-442;EUR;95.200;A;5;;true
+5100001003;2026;1010;2026-10-17;2026-10-17;17300001;HF-2026-443;EUR;95.200;A;5;;true
+5100000900;2026;1010;2026-10-01;2026-10-01;17300001;HF-2026-090;EUR;47.600;;5;;true
