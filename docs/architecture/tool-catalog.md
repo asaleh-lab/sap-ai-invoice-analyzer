@@ -208,14 +208,14 @@ Output:
   "Supplier": "17300001",
   "EmailAddress": "ap@helios-fasteners.example",
   "contact": {
-    "BusinessPartnerCompany": "17300001",
-    "BusinessPartnerPerson": "17300002",
-    "BusinessPartnerName": "Ines Keller"
+    "AddressID": "1730000101",
+    "Person": "1730000102",
+    "OrdinalNumber": "001"
   }
 }
 ```
 
-`EmailAddress` may be null when the simulated partner has no email. The tool still returns `200`. The contact draft action then reports missing contact information.
+`EmailAddress` may be null when the simulated partner has no email. The tool still returns `200`. The contact draft action then reports missing contact information. The simulated data stores the email row (`AddressID`, `Person`, `OrdinalNumber`), not an `A_BusinessPartnerContact` relationship, so `contact` uses those email key fields.
 
 Errors: missing `Supplier` `BAD_REQUEST`; unknown partner `NOT_FOUND`.
 
