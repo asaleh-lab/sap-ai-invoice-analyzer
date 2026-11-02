@@ -26,7 +26,7 @@ The financial path already works after ticket 007. This ticket must not change a
 - Counts: pending investigations (not `closed`), closed investigations, and count of pending cases grouped by supplier name.
 - Outcome counts: released, subsequent credit posted, dismissed.
 - Contact drafts are not closed cases. They stay on the pending detail view. The dashboard may show a number of stored drafts as an extra count if it is a one-line query. It is optional.
-- The supplier with the highest pending count is highlighted in the list of suppliers. With the seed, Helios Fasteners is the only supplier, so the grouping still works when a second supplier is added in a test.
+- The supplier with the highest pending count is highlighted in the list of suppliers. [ADR 0007](../adr/0007-publisher-ui-and-multi-supplier-seed.md) and [TICKET-010](TICKET-010-invoice-publisher.md) seed several suppliers. This ticket only reads that list. A test may still add a supplier if the seed is not loaded.
 
 ## Out of scope
 

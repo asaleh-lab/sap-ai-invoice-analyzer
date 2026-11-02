@@ -128,6 +128,7 @@ Versions checked on npm on 2 November 2026. Pin these in `package.json` when the
 - [ADR 0004](../adr/0004-read-only-agent-human-approved-writes.md) Agent reads, people approve writes.
 - [ADR 0005](../adr/0005-advisor-module-in-the-cap-app.md) Advisor module in the CAP app.
 - [ADR 0006](../adr/0006-cap-queries-not-cloud-sdk.md) CAP queries for simulated documents.
+- [ADR 0007](../adr/0007-publisher-ui-and-multi-supplier-seed.md) Publisher screen and a multi-supplier seed.
 
 ## Corrections to the original brief
 
