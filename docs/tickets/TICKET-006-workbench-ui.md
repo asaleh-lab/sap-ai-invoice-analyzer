@@ -2,7 +2,7 @@
 
 **Status:** done
 
-**Commit:** Finish this ticket, then commit its code-relevant files before the next ticket. One ticket, one commit. See `AGENTS.md`.
+**Commit:** `d54b017` — Serve the workbench through the Fiori sandbox so list and detail load in local CAP.
 
 | | |
 | --- | --- |
@@ -22,7 +22,8 @@ Actions themselves are ticket 007. This ticket renders the buttons disabled, or 
 
 ## Scope
 
-- Fiori elements app in `app/`, SAPUI5 1.144, served by the CAP app at `http://localhost:4004`. List report for the pending queue and object page for one investigation. Versions are in [solution-overview.md](../architecture/solution-overview.md).
+- Fiori elements app in `app/workbench/`, SAPUI5 1.144, served by the CAP app at `http://localhost:4004`. List report for the pending queue and object page for one investigation. Versions are in [solution-overview.md](../architecture/solution-overview.md).
+- **Local UI entry:** open `http://localhost:4004/workbench-ui`. CAP redirects to `app/workbench/webapp/test/flpSandbox.html`, the SAP-recommended launchpad sandbox for Fiori Elements (navigation and app state). `webapp/index.html` remains the generator-style direct component host for tests; use the sandbox URL for day-to-day review.
 - Pending list columns: supplier name (from the business partner read or from a field expanded via the investigation's invoicing party), supplier invoice reference, gross amount, currency, payment block reason, calculated block category, investigation status.
 - Block category is derived in the UI or by a small read-only function from the stored differences:
   - quantity difference not zero → `quantity`
@@ -76,4 +77,4 @@ The workbench is visible. The financial action is still a later ticket, so this 
 
 ## Risks
 
-The list report and the CAP service must share one URL in Compose (`http://localhost:4004`). Test the list there.
+The list report and the CAP service must share one URL in Compose (`http://localhost:4004`). Test the list at `http://localhost:4004/workbench-ui` (sandbox). Production would use Fiori launchpad registration, not `flpSandbox.html`.
