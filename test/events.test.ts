@@ -29,7 +29,7 @@ test("supplier invoice created events open one case", async () => {
 
     const cases = await investigations("5100001001", "2026");
     assert.equal(cases.length, 1);
-    assert.equal(cases[0]?.status, "open");
+    assert.equal(cases[0]?.status, "awaiting_review");
     assert.equal(cases[0]?.invoicingParty, "17300001");
     assert.equal(cases[0]?.documentCurrency, "EUR");
     assert.equal(Number(cases[0]?.invoiceGrossAmount), 119);
@@ -102,7 +102,7 @@ function event(id: string, supplierInvoice: string, fiscalYear: string): Record<
 function startServer(): ChildProcess {
   const child = spawn(process.execPath, ["node_modules/@sap/cds/bin/serve.js", "--port", port], {
     stdio: ["ignore", "pipe", "pipe"],
-    env: { ...process.env, PORT: port, cds_requires_db_credentials_url: dbFile },
+    env: { ...process.env, PORT: port, LLM_API_KEY: "", ADVISOR_FORCE_ACTION: "", cds_requires_db_credentials_url: dbFile },
   });
   child.stdout?.on("data", (chunk: Buffer) => {
     logs += chunk.toString();

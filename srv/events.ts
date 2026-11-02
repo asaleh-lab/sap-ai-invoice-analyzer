@@ -1,6 +1,7 @@
 import cds from "@sap/cds";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { readSupplierInvoiceDocument } from "./agent-tools.ts";
+import { investigateCase } from "./investigation.ts";
 import { projectTolerance } from "./project-tolerance.ts";
 
 const createdType = "sap.s4.beh.supplierinvoice.v1.SupplierInvoice.Created.v1";
@@ -176,6 +177,7 @@ async function consume(id: string): Promise<void> {
     status: "open",
     projectTolerance,
   });
+  await investigateCase(investigationId, supplierInvoice, fiscalYear);
   await UPDATE("invc.EventInbox").set({ status: "processed", investigation_ID: investigationId }).where({ id });
   log.info(id, "processed");
 }
