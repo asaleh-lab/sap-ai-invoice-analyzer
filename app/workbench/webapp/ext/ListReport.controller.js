@@ -35,8 +35,11 @@ sap.ui.define(["sap/m/FlexItemData", "sap/ui/core/Fragment", "sap/ui/model/json/
         );
         this.refreshSummary();
         this.onWorkbenchTab({ getParameter: () => "dashboard" });
+        this._onWorkbenchResize = () => this._sizeSupplierGrid();
+        window.addEventListener("resize", this._onWorkbenchResize);
         setTimeout(() => this._prepareCaseTable(), 300);
         setTimeout(() => this._prepareCaseTable(), 800);
+        setTimeout(() => this._sizeSupplierGrid(), 300);
       });
     },
     _prepareCaseTable: function () {
@@ -55,6 +58,7 @@ sap.ui.define(["sap/m/FlexItemData", "sap/ui/core/Fragment", "sap/ui/model/json/
       this._sizeCaseTable();
       const body = this.byId("dashboardBody");
       this._showFilters(!body || !body.getVisible());
+      this._sizeSupplierGrid();
     },
     _sizeCaseTable: function () {
       const table = this.byId("fe::TabMultipleMode");
@@ -114,6 +118,15 @@ sap.ui.define(["sap/m/FlexItemData", "sap/ui/core/Fragment", "sap/ui/model/json/
       model.setSizeLimit(Math.max(summary.suppliers.length, 100));
       model.setData(summary);
       setTimeout(() => this._syncSupplierPager(), 0);
+    },
+    _sizeSupplierGrid: function () {
+      const table = this.byId("supplierGrid");
+      const body = this.byId("dashboardBody");
+      const dom = table && table.getDomRef && table.getDomRef();
+      if (!table || !dom || !body || !body.getVisible()) return;
+      const bottomGap = 16;
+      const height = Math.max(window.innerHeight - dom.getBoundingClientRect().top - bottomGap, 280);
+      if (table.getHeight() !== height + "px") table.setHeight(height + "px");
     },
     onSupplierRowsUpdated: function () {
       this._syncSupplierPager();
