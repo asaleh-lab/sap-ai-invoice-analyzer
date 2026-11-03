@@ -1,22 +1,163 @@
-sap.ui.define(["sap/ui/core/Fragment", "sap/ui/model/json/JSONModel"], function (Fragment, JSONModel) {
+sap.ui.define(["sap/m/FlexItemData", "sap/ui/core/Fragment", "sap/ui/model/json/JSONModel"], function (FlexItemData, Fragment, JSONModel) {
   "use strict";
   return {
     onAfterRendering: function () {
       if (this._summary) return;
       const view = this.getView();
-      Fragment.load({ name: "workbench.ext.Dashboard", controller: this }).then((panel) => {
+      Fragment.load({ id: view.getId(), name: "workbench.ext.Dashboard", controller: this }).then((panel) => {
         this._summary = panel;
         const page = view.getContent()[0];
-        const expanded = page && page.getTitle && page.getTitle();
-        if (expanded && expanded.addExpandedContent) expanded.addExpandedContent(panel);
-        view.setModel(new JSONModel({ pending: 0, closed: 0, released: 0, subsequentCreditPosted: 0, dismissed: 0, suppliers: [] }), "summary");
+        const content = page && page.getContent && page.getContent();
+        if (content && page.setContent) {
+          panel.setFitContainer(true);
+          panel.setHeight("100%");
+          content.setLayoutData(new FlexItemData({ growFactor: 1, baseSize: "0%" }));
+          page.setContent(panel);
+          panel.addItem(content);
+          this._caseList = content;
+        }
+        view.setModel(
+          new JSONModel({
+            pending: 0,
+            closed: 0,
+            released: 0,
+            subsequentCreditPosted: 0,
+            dismissed: 0,
+            contactDrafts: 0,
+            releasedShare: 0,
+            creditShare: 0,
+            dismissedShare: 0,
+            topSuppliers: [],
+          }),
+          "summary",
+        );
         this.refreshSummary();
+        this.onWorkbenchTab({ getParameter: () => "dashboard" });
+        setTimeout(() => this._prepareCaseTable(), 300);
+        setTimeout(() => this._prepareCaseTable(), 800);
       });
+    },
+    _prepareCaseTable: function () {
+      this._hideBuiltInViews();
+      const table = this.byId("fe::TabMultipleMode");
+      if (!table || !table.getDomRef()) return;
+      if (!table._workbenchHook) {
+        table._workbenchHook = true;
+        const render = table.onAfterRendering;
+        const controller = this;
+        table.onAfterRendering = function () {
+          if (render) render.apply(this, arguments);
+          controller._sizeCaseTable();
+        };
+      }
+      this._sizeCaseTable();
+      const body = this.byId("dashboardBody");
+      this._showFilters(!body || !body.getVisible());
+    },
+    _sizeCaseTable: function () {
+      const table = this.byId("fe::TabMultipleMode");
+      const dom = table && table.getDomRef && table.getDomRef();
+      if (!dom) return;
+      const dashboard = this.byId("dashboardBody");
+      const showList = !dashboard || !dashboard.getVisible();
+      dom.style.minHeight = showList ? "70vh" : "0";
+      dom.style.display = showList ? "block" : "none";
+      const head = document.getElementById(table.getId() + "--header");
+      if (head) head.style.display = "none";
+    },
+    _hideBuiltInViews: function () {
+      const own = this.byId("workbenchTabs");
+      this.getView().findAggregatedObjects(true).forEach((control) => {
+        if (!control.isA || control === own) return;
+        const items = control.getItems ? control.getItems() : [];
+        const texts = items.map((item) => (item.getText ? item.getText() : ""));
+        if (texts.some((text) => text.startsWith("Pending")) && texts.some((text) => text.startsWith("Processed"))) this._hideTabStrip(control);
+      });
+    },
+    onWorkbenchTab: function (event) {
+      const item = event.getParameter("item");
+      const key = item && item.getKey ? item.getKey() : event.getParameter("key");
+      const body = this.byId("dashboardBody");
+      if (body) body.setVisible(key === "dashboard");
+      this._showCaseList(key !== "dashboard");
+      this._showFilters(key !== "dashboard");
+      if (key === "pending") this._selectCaseView("Pending");
+      if (key === "processed") this._selectCaseView("Processed");
+      this._prepareCaseTable();
+    },
+    showPending: function () {
+      const tabs = this.byId("workbenchTabs");
+      if (tabs) tabs.setSelectedKey("pending");
+      this.onWorkbenchTab({ getParameter: () => "pending" });
+    },
+    showProcessed: function () {
+      const tabs = this.byId("workbenchTabs");
+      if (tabs) tabs.setSelectedKey("processed");
+      this.onWorkbenchTab({ getParameter: () => "processed" });
     },
     refreshSummary: async function () {
       const response = await fetch("/workbench/workbenchSummary()");
       if (!response.ok || !this.getView()) return;
-      this.getView().getModel("summary").setData(await response.json());
+      const summary = await response.json();
+      const scale = Math.max(summary.released || 0, summary.subsequentCreditPosted || 0, summary.dismissed || 0, 1);
+      summary.releasedShare = ((summary.released || 0) / scale) * 100;
+      summary.creditShare = ((summary.subsequentCreditPosted || 0) / scale) * 100;
+      summary.dismissedShare = ((summary.dismissed || 0) / scale) * 100;
+      summary.topSuppliers = (summary.suppliers || [])
+        .slice()
+        .sort((left, right) => right.pendingCount - left.pendingCount || left.supplierName.localeCompare(right.supplierName))
+        .slice(0, 4);
+      this.getView().getModel("summary").setData(summary);
+    },
+    _hideTabStrip: function (control) {
+      const dom = control.getDomRef && control.getDomRef();
+      const head = (dom && dom.querySelector(".sapMITBHead, .sapMSegB")) || document.getElementById(control.getId() + "--header");
+      if (head) head.style.display = "none";
+      if (dom) {
+        dom.style.minHeight = "70vh";
+        dom.style.display = "block";
+      }
+    },
+    _showFilters: function (visible) {
+      this.getView().findAggregatedObjects(true).forEach((control) => {
+        if (!control.isA || !control.setVisible) return;
+        const name = control.getMetadata().getName();
+        const id = control.getId ? control.getId() : "";
+        if (name.indexOf("FilterBar") >= 0 || id.indexOf("FilterBar") >= 0) control.setVisible(visible);
+      });
+      const root = this.getView().getDomRef && this.getView().getDomRef();
+      if (!root) return;
+      root.querySelectorAll(".sapMListReportFilter, .sapUiMdcFilterBar, [id*='FilterBar']").forEach((node) => {
+        node.style.display = visible ? "" : "none";
+      });
+    },
+    _showCaseList: function (visible) {
+      if (this._caseList && this._caseList.setVisible) {
+        this._caseList.setVisible(visible);
+        const dom = this._caseList.getDomRef && this._caseList.getDomRef();
+        if (dom) dom.style.minHeight = visible ? "70vh" : "";
+      }
+    },
+    _selectCaseView: function (label) {
+      const own = this.byId("workbenchTabs");
+      const controls = this.getView().findAggregatedObjects(true);
+      controls.forEach((control) => {
+        if (!control.isA || own === control) return;
+        if (control.isA("sap.m.IconTabBar")) {
+          const item = (control.getItems() || []).find((entry) => entry.getText && entry.getText().startsWith(label));
+          if (!item) return;
+          this._hideTabStrip(control);
+          control.setSelectedKey(item.getKey());
+          control.fireSelect({ key: item.getKey(), item: item });
+        }
+        if (control.isA("sap.m.SegmentedButton")) {
+          const item = (control.getItems() || []).find((entry) => entry.getText && entry.getText().startsWith(label));
+          if (!item) return;
+          this._hideTabStrip(control);
+          control.setSelectedKey(item.getKey());
+          control.fireSelectionChange({ item: item });
+        }
+      });
     },
   };
 });

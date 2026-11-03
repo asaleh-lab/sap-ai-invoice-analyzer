@@ -24,6 +24,9 @@
         "sap.fe.templates": {}
       }
     },
+    "resources": {
+      "css": [{ "uri": "css/dashboard.css" }]
+    },
     "rootView": {
       "viewName": "sap.fe.core.rootView.Fcl",
       "type": "XML",

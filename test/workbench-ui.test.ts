@@ -22,6 +22,14 @@ test("outcome labels follow a mocked summary", () => {
   );
   const fragment = readFileSync("app/workbench/webapp/ext/Dashboard.fragment.xml", "utf8");
   for (const row of labels) assert.match(fragment, new RegExp(row.label));
+  assert.match(fragment, /text="Dashboard"/);
+  assert.match(fragment, /text="Pending"/);
+  assert.match(fragment, /text="Processed"/);
+  assert.match(fragment, /press=".showPending"/);
+  assert.match(fragment, /press=".showProcessed"/);
+  assert.match(fragment, /press=".refreshSummary"/);
+  const controller = readFileSync("app/workbench/webapp/ext/ListReport.controller.js", "utf8");
+  assert.match(controller, /_showFilters\(key !== "dashboard"\)/);
 });
 
 test("pending workbench lists simulated cases and hides retry until a failure", async () => {

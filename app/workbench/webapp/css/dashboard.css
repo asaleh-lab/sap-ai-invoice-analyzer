@@ -1,0 +1,28 @@
+.workbenchDashboard {
+  padding: 0.5rem 0 1rem;
+}
+
+.workbenchTiles {
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.workbenchTile {
+  min-width: 13rem;
+}
+
+.workbenchPanels {
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.workbenchPanel {
+  flex: 1 1 18rem;
+  min-width: 18rem;
+}
+
+.workbenchOutcomeTiles {
+  gap: 0.75rem;
+  align-items: flex-start;
+}

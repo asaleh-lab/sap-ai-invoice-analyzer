@@ -1,14 +1,72 @@
 <core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
-  <VBox id="workbenchSummary" class="sapUiSmallMargin">
-    <Text text="Pending {summary>/pending}" />
-    <Text text="Processed {summary>/closed}" />
-    <Text text="Released {summary>/released}" />
-    <Text text="Subsequent credit posted {summary>/subsequentCreditPosted}" />
-    <Text text="Dismissed {summary>/dismissed}" />
-    <List items="{summary>/suppliers}">
-      <CustomListItem highlight="{= ${summary>highlighted} ? 'Information' : 'None' }">
-        <Text text="{summary>supplierName} {summary>pendingCount}" />
-      </CustomListItem>
-    </List>
+  <VBox>
+    <SegmentedButton id="workbenchTabs" selectedKey="dashboard" selectionChange=".onWorkbenchTab" class="sapUiSmallMarginBottom">
+      <items>
+        <SegmentedButtonItem key="dashboard" text="Dashboard" />
+        <SegmentedButtonItem key="pending" text="Pending" />
+        <SegmentedButtonItem key="processed" text="Processed" />
+      </items>
+    </SegmentedButton>
+    <VBox id="dashboardBody" class="workbenchDashboard">
+      <Toolbar class="sapUiTinyMarginBottom">
+        <Title text="Case overview" level="H3" />
+        <ToolbarSpacer />
+        <Button text="Refresh" icon="sap-icon://refresh" type="Transparent" press=".refreshSummary" />
+      </Toolbar>
+      <HBox class="workbenchTiles">
+        <GenericTile class="workbenchTile" header="Pending" press=".showPending" frameType="OneByHalf">
+          <TileContent>
+            <NumericContent value="{summary>/pending}" withMargin="false" />
+          </TileContent>
+        </GenericTile>
+        <GenericTile class="workbenchTile" header="Processed" press=".showProcessed" frameType="OneByHalf">
+          <TileContent>
+            <NumericContent value="{summary>/closed}" withMargin="false" />
+          </TileContent>
+        </GenericTile>
+        <GenericTile class="workbenchTile" header="Contact drafts" frameType="OneByHalf">
+          <TileContent>
+            <NumericContent value="{summary>/contactDrafts}" withMargin="false" />
+          </TileContent>
+        </GenericTile>
+      </HBox>
+      <HBox class="workbenchPanels">
+        <Panel class="workbenchPanel" headerText="Outcomes">
+          <VBox class="workbenchOutcomeTiles">
+            <GenericTile class="workbenchTile" header="Released" frameType="OneByHalf">
+              <TileContent>
+                <NumericContent value="{summary>/released}" withMargin="false" />
+              </TileContent>
+            </GenericTile>
+            <GenericTile class="workbenchTile" header="Subsequent credit posted" frameType="OneByHalf">
+              <TileContent>
+                <NumericContent value="{summary>/subsequentCreditPosted}" withMargin="false" />
+              </TileContent>
+            </GenericTile>
+            <GenericTile class="workbenchTile" header="Dismissed" frameType="OneByHalf">
+              <TileContent>
+                <NumericContent value="{summary>/dismissed}" withMargin="false" />
+              </TileContent>
+            </GenericTile>
+          </VBox>
+        </Panel>
+        <Panel class="workbenchPanel" headerText="Suppliers with pending cases">
+          <Table items="{summary>/topSuppliers}" noDataText="No suppliers have pending cases.">
+            <columns>
+              <Column><Text text="Supplier" /></Column>
+              <Column width="6rem" hAlign="End"><Text text="Pending" /></Column>
+              <Column width="8rem" />
+            </columns>
+            <ColumnListItem>
+              <cells>
+                <ObjectStatus text="{summary>supplierName}" state="{= ${summary>highlighted} ? 'Indication05' : 'None' }" />
+                <Text text="{summary>pendingCount}" />
+                <Link text="Open pending" press=".showPending" />
+              </cells>
+            </ColumnListItem>
+          </Table>
+        </Panel>
+      </HBox>
+    </VBox>
   </VBox>
 </core:FragmentDefinition>
