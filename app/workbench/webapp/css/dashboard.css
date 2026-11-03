@@ -4,6 +4,8 @@
   min-height: 0;
   height: 100%;
   padding: 0.5rem 0 0;
+  color: var(--sapTextColor);
+  background: transparent;
 }
 
 .workbenchTiles {
