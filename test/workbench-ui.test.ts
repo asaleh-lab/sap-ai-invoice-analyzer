@@ -45,7 +45,8 @@ test("pending workbench lists simulated cases and hides retry until a failure", 
     assert.match(await sandbox.text(), /createRenderer/);
     const manifest = await (await fetch(`${base}/workbench-ui/manifest.json`)).json();
     const list = manifest["sap.ui5"].routing.targets.InvestigationsList.options.settings;
-    assert.match(list.content.table.noData.text, /Send sample events/);
+    assert.equal(list.content.table.noData.text, "No cases are waiting.");
+    assert.equal(list.content.header, undefined);
     const views = list.views.paths.map((view: { key: string; annotationPath: string }) => view.annotationPath);
     assert.deepEqual(views, [
       "com.sap.vocabularies.UI.v1.SelectionPresentationVariant",

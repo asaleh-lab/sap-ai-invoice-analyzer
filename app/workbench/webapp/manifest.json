@@ -88,17 +88,9 @@
                 ]
               },
               "content": {
-                "header": {
-                  "actions": {
-                    "sendSampleEvents": {
-                      "press": "workbench.ext.ListReport.sendSampleEvents",
-                      "text": "Send sample events"
-                    }
-                  }
-                },
                 "table": {
                   "noData": {
-                    "text": "No cases are waiting. Choose Send sample events, or POST the three sample CloudEvents to /simulated-events."
+                    "text": "No cases are waiting."
                   }
                 }
               }
