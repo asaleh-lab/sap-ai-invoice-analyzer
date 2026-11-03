@@ -23,4 +23,19 @@ service InvestigationService @(path: '/workbench') {
   };
   @readonly entity EventInbox as projection on invc.EventInbox;
   action retryInvestigation(ID: UUID);
+  action releasePaymentBlock(investigationId: UUID, actor: String) returns Decision;
+  action postSubsequentCredit(investigationId: UUID, actor: String) returns Decision;
+  action prepareSupplierContact(investigationId: UUID, actor: String) returns Decision;
+  action dismissInvestigation(investigationId: UUID, actor: String, reason: String) returns Decision;
+
+  type Decision {
+    ID : UUID;
+    action : String;
+    reason : String;
+    actor : String;
+    simulatedDocument : String;
+    simulatedFiscalYear : String;
+    emailDraftTo : String;
+    emailDraftBody : String;
+  }
 }

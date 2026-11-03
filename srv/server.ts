@@ -3,6 +3,7 @@ import { createReadStream, existsSync, statSync } from "node:fs";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import path from "node:path";
 import { registerSimulatedEvents, resumeReceivedRows } from "./events.ts";
+import { registerHumanActions } from "./actions.ts";
 import { registerRetry } from "./investigation.ts";
 
 const workbenchRoot = path.resolve("app/workbench/webapp");
@@ -30,5 +31,6 @@ cds.on("bootstrap", (app) => {
   });
   registerSimulatedEvents(app as unknown as { post(path: string, handler: (req: IncomingMessage, res: ServerResponse) => void): void });
   registerRetry();
+  registerHumanActions();
   resumeReceivedRows();
 });

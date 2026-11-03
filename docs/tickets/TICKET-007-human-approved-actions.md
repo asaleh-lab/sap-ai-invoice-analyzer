@@ -1,6 +1,6 @@
 # TICKET-007: Human-approved actions
 
-**Status:** ready-for-agent
+**Status:** done
 
 **Commit:** Finish this ticket, then commit its code-relevant files before the next ticket. One ticket, one commit. See `AGENTS.md`.
 
@@ -53,14 +53,14 @@ Action handlers, UI buttons, tests for all four actions and for a rejected misma
 
 ## Acceptance criteria
 
-- [ ] Approving release on `5100001003` clears `PaymentBlockingReason` and closes the case. A second approve does not create a second decision.
-- [ ] Approving subsequent credit on `5100001001` inserts a new invoice, `SupplierInvoiceIsCreditMemo` `X`, item amount `20.00`, quantity `10`, `IsSubsequentDebitCredit` `X`, same purchase order `4500001001` item `10`. The original `5100001001` still has payment block `A`, item amount `100.00`, and an empty `IsSubsequentDebitCredit`.
-- [ ] Calling release for `5100001001` or `5100001002` is rejected and the simulated invoice is unchanged.
-- [ ] Calling subsequent credit for `5100001002` is rejected.
-- [ ] Contact on `5100001002` stores a draft to `ap@helios-fasteners.example` and leaves the case `awaiting_review` and the invoice blocked.
-- [ ] Dismiss with a reason closes the case and leaves `PaymentBlockingReason` as it was.
-- [ ] Dismiss with an empty reason is rejected.
-- [ ] No action is exposed on `AgentToolService`.
+- [x] Approving release on `5100001003` clears `PaymentBlockingReason` and closes the case. A second approve does not create a second decision.
+- [x] Approving subsequent credit on `5100001001` inserts a new invoice, `SupplierInvoiceIsCreditMemo` `X`, item amount `20.00`, quantity `10`, `IsSubsequentDebitCredit` `X`, same purchase order `4500001001` item `10`. The original `5100001001` still has payment block `A`, item amount `100.00`, and an empty `IsSubsequentDebitCredit`.
+- [x] Calling release for `5100001001` or `5100001002` is rejected and the simulated invoice is unchanged.
+- [x] Calling subsequent credit for `5100001002` is rejected.
+- [x] Contact on `5100001002` stores a draft to `ap@helios-fasteners.example` and leaves the case `awaiting_review` and the invoice blocked.
+- [x] Dismiss with a reason closes the case and leaves `PaymentBlockingReason` as it was.
+- [x] Dismiss with an empty reason is rejected.
+- [x] No action is exposed on `AgentToolService`.
 
 ## Test cases
 
