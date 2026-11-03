@@ -4,3 +4,5 @@ db.sqlite
 db.sqlite-shm
 db.sqlite-wal
 .env
+.scratch/dashboard.png
+.scratch/btn-keep/
