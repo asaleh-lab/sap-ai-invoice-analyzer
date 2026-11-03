@@ -1,8 +1,8 @@
 # TICKET-002: CDS model and seed data
 
-**Status:** ready-for-agent
+**Status:** done
 
-**Commit:** Finish this ticket, then commit its code-relevant files before the next ticket. One ticket, one commit. See `AGENTS.md`.
+**Commit:** `03e5cfd` — Seed simulated SAP documents so later reads have rows without credentials.
 
 | | |
 | --- | --- |
@@ -57,14 +57,14 @@ Event consumer, agent, UI, write actions, EDMX import.
 
 ## Acceptance criteria
 
-- [ ] After `cds deploy` or `cds watch`, OData read of supplier invoice `5100001001` / `2026` returns item amount `100.00`, purchase order `4500001001`, and `PaymentBlockingReason` `A`.
-- [ ] The purchase order item `10` returns net price `8.00` and quantity `10`.
-- [ ] The material document item for that PO item returns movement type `101` and quantity `10`.
-- [ ] Invoice `5100001002` has receipt quantity `8`.
-- [ ] Invoice `5100000900` has an empty payment block reason.
-- [ ] Business partner `17300001` returns the name Helios Fasteners GmbH and the example email.
-- [ ] POST to the simulated supplier invoice entity set is rejected.
-- [ ] `IsSubsequentDebitCredit` is empty on every seeded item.
+- [x] After `cds deploy` or `cds watch`, OData read of supplier invoice `5100001001` / `2026` returns item amount `100.00`, purchase order `4500001001`, and `PaymentBlockingReason` `A`.
+- [x] The purchase order item `10` returns net price `8.00` and quantity `10`.
+- [x] The material document item for that PO item returns movement type `101` and quantity `10`.
+- [x] Invoice `5100001002` has receipt quantity `8`.
+- [x] Invoice `5100000900` has an empty payment block reason.
+- [x] Business partner `17300001` returns the name Helios Fasteners GmbH and the example email.
+- [x] POST to the simulated supplier invoice entity set is rejected.
+- [x] `IsSubsequentDebitCredit` is empty on every seeded item.
 
 ## Test cases
 
