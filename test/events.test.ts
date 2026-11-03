@@ -102,7 +102,7 @@ function event(id: string, supplierInvoice: string, fiscalYear: string): Record<
 function startServer(): ChildProcess {
   const child = spawn(process.execPath, ["node_modules/@sap/cds/bin/serve.js", "--port", port], {
     stdio: ["ignore", "pipe", "pipe"],
-    env: { ...process.env, PORT: port, LLM_API_KEY: "", ADVISOR_FORCE_ACTION: "", cds_requires_db_credentials_url: dbFile },
+    env: { ...process.env, PORT: port, CDS_invoiceAdvisor_apiKey: "", ADVISOR_FORCE_ACTION: "", cds_requires_db_credentials_url: dbFile },
   });
   child.stdout?.on("data", (chunk: Buffer) => {
     logs += chunk.toString();

@@ -1,6 +1,7 @@
 import { Annotation, END, START, StateGraph } from "@langchain/langgraph";
 import { ChatOpenAI } from "@langchain/openai";
-import { scriptedAction } from "./policy.ts";
+import { advisorSettings, type AdvisorSettings } from "./config.ts";
+import { allowedActions, scriptedAction } from "./policy.ts";
 
 export type ToolArgs = Record<string, string>;
 
@@ -48,12 +49,12 @@ const Phase = Annotation.Root({
 });
 
 export async function investigate(request: InvestigateRequest): Promise<Advice> {
-  const key = process.env.LLM_API_KEY?.trim() ?? "";
-  if (key === "") return scripted(request);
-  return modelAdvice(request, key);
+  const settings = advisorSettings();
+  if (settings.apiKey === "") return scripted(request, settings.tolerance);
+  return modelAdvice(request, settings);
 }
 
-async function scripted(request: InvestigateRequest): Promise<Advice> {
+async function scripted(request: InvestigateRequest, tolerance: number): Promise<Advice> {
   const called: string[] = [];
   const bag: Record<string, unknown> = {};
   const invoiceKey = request.input;
@@ -100,18 +101,18 @@ async function scripted(request: InvestigateRequest): Promise<Advice> {
     .compile();
 
   await graph.invoke({ phase: "start" });
-  return adviceFromBag(request.input.SupplierInvoice, bag, called, null);
+  return adviceFromBag(request.input.SupplierInvoice, bag, called, null, tolerance);
 }
 
-async function modelAdvice(request: InvestigateRequest, apiKey: string): Promise<Advice> {
+async function modelAdvice(request: InvestigateRequest, settings: AdvisorSettings): Promise<Advice> {
   const called: string[] = [];
   const bag: Record<string, unknown> = {};
   const model = new ChatOpenAI({
-    apiKey,
-    model: process.env.LLM_MODEL || "gpt-4o-mini",
+    apiKey: settings.apiKey,
+    model: settings.model,
     timeout: 60_000,
     configuration: {
-      baseURL: process.env.LLM_BASE_URL || "https://api.openai.com/v1",
+      baseURL: settings.baseUrl,
     },
   });
 
@@ -125,6 +126,7 @@ async function modelAdvice(request: InvestigateRequest, apiKey: string): Promise
   ];
   let narrative = "";
   let recommendedAction = "insufficient_evidence";
+  let corrections = 0;
 
   const graph = new StateGraph(Phase)
     .addNode("model", async () => {
@@ -138,6 +140,32 @@ async function modelAdvice(request: InvestigateRequest, apiKey: string): Promise
         return { phase: "tool" };
       }
       if (parsed && typeof parsed.recommendedAction === "string") {
+        const grounded = called.includes("get_supplier_invoice") && called.includes("calculate_invoice_variance");
+        const variance = asRecord(bag.variance);
+        const numbers = {
+          comparable: variance?.comparable === true,
+          priceDifference: number(variance?.priceDifference),
+          quantityDifference: number(variance?.quantityDifference),
+        };
+        const allowed = allowedActions(numbers, settings.tolerance);
+        if (!grounded || !allowed.includes(parsed.recommendedAction)) {
+          corrections += 1;
+          if (corrections > 2) {
+            if (!grounded) {
+              bag.fallback = true;
+              return { phase: "done" };
+            }
+            recommendedAction = scriptedAction(numbers, settings.tolerance);
+            narrative = text(parsed.narrative);
+            return { phase: "done" };
+          }
+          messages.push(
+            grounded
+              ? `Action ${parsed.recommendedAction} is not allowed for price difference ${numbers.priceDifference} and quantity difference ${numbers.quantityDifference}. Allowed: ${allowed.join(", ")}.`
+              : "Call get_supplier_invoice and calculate_invoice_variance before recommending an action.",
+          );
+          return { phase: "model" };
+        }
         recommendedAction = parsed.recommendedAction;
         narrative = text(parsed.narrative);
       }
@@ -157,7 +185,11 @@ async function modelAdvice(request: InvestigateRequest, apiKey: string): Promise
       return { phase: "model" };
     })
     .addEdge(START, "model")
-    .addConditionalEdges("model", (state) => (state.phase === "tool" ? "tool" : END))
+    .addConditionalEdges("model", (state) => {
+      if (state.phase === "tool") return "tool";
+      if (state.phase === "model") return "model";
+      return END;
+    })
     .addEdge("tool", "model")
     .compile();
 
@@ -168,7 +200,8 @@ async function modelAdvice(request: InvestigateRequest, apiKey: string): Promise
     }),
   ]);
 
-  return adviceFromBag(request.input.SupplierInvoice, bag, called, { recommendedAction, narrative });
+  if (bag.fallback === true) return scripted(request, settings.tolerance);
+  return adviceFromBag(request.input.SupplierInvoice, bag, called, { recommendedAction, narrative }, settings.tolerance);
 }
 
 function adviceFromBag(
@@ -176,17 +209,18 @@ function adviceFromBag(
   bag: Record<string, unknown>,
   called: string[],
   model: { recommendedAction: string; narrative: string } | null,
+  tolerance: number,
 ): Advice {
   const variance = asRecord(bag.variance);
   const price = number(variance?.priceDifference);
   const quantity = number(variance?.quantityDifference);
   const comparable = variance?.comparable === true;
-  const action = model?.recommendedAction ?? scriptedAction({ comparable, priceDifference: price, quantityDifference: quantity }, 0.5);
+  const action = model?.recommendedAction ?? scriptedAction({ comparable, priceDifference: price, quantityDifference: quantity }, tolerance);
   const priceText = money(price);
   const quantityText = quantityTextOf(quantity);
   const narrative =
     model?.narrative ||
-    `Supplier invoice ${supplierInvoice} is blocked. The price difference is ${priceText} and the quantity difference is ${quantityText}. The recommended action is ${action}. The invoice is unchanged.`;
+    `Supplier invoice ${supplierInvoice} is blocked. The price difference is ${priceText} and the quantity difference is ${quantityText}. The recommended action is ${action}.`;
   return {
     recommendedAction: action,
     narrative,

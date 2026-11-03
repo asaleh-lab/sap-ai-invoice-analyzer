@@ -32,7 +32,7 @@ test("scripted policy stores the three seeded recommendations", async () => {
     assert.equal(Number(match.quantityDifference), 0);
 
     assert.match(String(price.narrative), /5100001001/);
-    assert.match(String(price.narrative), /unchanged/);
+    assert.doesNotMatch(String(price.narrative), /unchanged/);
   } finally {
     ctx.child.kill();
   }
@@ -80,7 +80,7 @@ function start(port: string, extra: Record<string, string> = {}): Ctx {
     env: {
       ...process.env,
       PORT: port,
-      LLM_API_KEY: "",
+      CDS_invoiceAdvisor_apiKey: "",
       ADVISOR_FORCE_ACTION: "",
       cds_requires_db_credentials_url: dbFile,
       ...extra,

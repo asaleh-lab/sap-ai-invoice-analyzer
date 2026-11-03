@@ -52,7 +52,7 @@ UI, human write actions, email sending, a second model, RAG, a second process fo
 
 - Tool wrappers send the structured arguments from the catalog. They validate required fields before calling the injected function.
 - Evidence rows use api, entity, object key, field, and value. At least the payment block, the item amount, the PO net price, and the received quantity are stored when those reads happened.
-- Narrative for the scripted policy is a short English paragraph that names the supplier invoice, the price or quantity difference, and the recommended action. It says the invoice is unchanged.
+- Narrative for the scripted policy is a short English paragraph that names the supplier invoice, the price or quantity difference, and the recommended action.
 - Assumptions include the sentence that the tolerance `0.50` is project configuration and is not SAP tolerance customizing.
 - The model call times out after 60 seconds. Timeout sets `investigation_failed`.
 - Keep the LLM key out of logs and out of the investigation row.

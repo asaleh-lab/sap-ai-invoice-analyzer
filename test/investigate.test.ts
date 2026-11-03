@@ -10,8 +10,8 @@ test("scripted price case calls the invoice, order, receipts, and variance tools
     network.push("fetch");
     throw new Error("network");
   }) as typeof fetch;
-  const previous = process.env.LLM_API_KEY;
-  process.env.LLM_API_KEY = "";
+  const previous = process.env.CDS_invoiceAdvisor_apiKey;
+  process.env.CDS_invoiceAdvisor_apiKey = "";
   try {
     const advice = await investigate({
       caseId: "case-1",
@@ -29,16 +29,16 @@ test("scripted price case calls the invoice, order, receipts, and variance tools
       "calculate_invoice_variance",
     ]);
     assert.equal(network.length, 0);
-    assert.match(advice.narrative, /unchanged/);
+    assert.doesNotMatch(advice.narrative, /unchanged/);
   } finally {
     globalThis.fetch = original;
-    if (previous == null) delete process.env.LLM_API_KEY;
-    else process.env.LLM_API_KEY = previous;
+    if (previous == null) delete process.env.CDS_invoiceAdvisor_apiKey;
+    else process.env.CDS_invoiceAdvisor_apiKey = previous;
   }
 });
 
 test("a tool wrapper rejects a call that omits a required field", async () => {
-  process.env.LLM_API_KEY = "";
+  process.env.CDS_invoiceAdvisor_apiKey = "";
   const tools = fakeTools([]);
   tools.get_supplier_invoice = async () => ({});
   await assert.rejects(

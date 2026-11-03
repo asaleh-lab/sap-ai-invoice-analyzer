@@ -138,7 +138,7 @@ test("pending workbench lists simulated cases and hides retry until a failure", 
 function start(dbFile: string): ChildProcess {
   return spawn(process.execPath, ["node_modules/@sap/cds/bin/serve.js", "--port", port], {
     stdio: ["ignore", "pipe", "pipe"],
-    env: { ...process.env, PORT: port, LLM_API_KEY: "", ADVISOR_FORCE_ACTION: "", cds_requires_db_credentials_url: dbFile },
+    env: { ...process.env, PORT: port, CDS_invoiceAdvisor_apiKey: "", ADVISOR_FORCE_ACTION: "", cds_requires_db_credentials_url: dbFile },
   });
 }
 

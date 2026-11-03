@@ -74,7 +74,7 @@ test("summary counts closed outcomes and leaves a contact draft pending", async 
 function startServer(): ChildProcess {
   return spawn(process.execPath, ["node_modules/@sap/cds/bin/serve.js", "--port", port], {
     stdio: "ignore",
-    env: { ...process.env, PORT: port, LLM_API_KEY: "", ADVISOR_FORCE_ACTION: "", cds_requires_db_credentials_url: dbFile },
+    env: { ...process.env, PORT: port, CDS_invoiceAdvisor_apiKey: "", ADVISOR_FORCE_ACTION: "", cds_requires_db_credentials_url: dbFile },
   });
 }
 
