@@ -153,6 +153,9 @@
           },
           "sap.fe.templates.ObjectPage.ObjectPageController": {
             "controllerName": "workbench.ext.ObjectPage"
+          },
+          "sap.fe.core.rootView.Fcl": {
+            "controllerName": "workbench.ext.Fcl"
           }
         }
       }
