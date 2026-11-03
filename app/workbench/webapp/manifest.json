@@ -3,7 +3,13 @@
   "sap.app": {
     "id": "workbench",
     "type": "application",
-    "title": "Pending investigations (simulated S/4HANA Cloud data)",
+    "i18n": {
+      "bundleUrl": "i18n/i18n.properties",
+      "supportedLocales": ["en", "de"],
+      "fallbackLocale": "en"
+    },
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
     "applicationVersion": { "version": "0.1.0" },
     "dataSources": {
       "main": {
@@ -34,6 +40,14 @@
       "id": "appRootView"
     },
     "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "workbench.i18n.i18n",
+          "supportedLocales": ["en", "de"],
+          "fallbackLocale": "en"
+        }
+      },
       "": {
         "dataSource": "main",
         "preload": true,
@@ -93,7 +107,7 @@
               "content": {
                 "table": {
                   "noData": {
-                    "text": "No cases are waiting."
+                    "text": "{i18n>noCases}"
                   }
                 }
               }
@@ -113,28 +127,28 @@
                   "actions": {
                     "retryInvestigation": {
                       "press": "workbench.ext.ObjectPage.retryInvestigation",
-                      "text": "Retry",
+                      "text": "{i18n>retry}",
                       "visible": "{= %{status} === 'investigation_failed' }",
                       "enabled": "{= %{status} === 'investigation_failed' }"
                     },
                     "releasePaymentBlock": {
                       "press": "workbench.ext.ObjectPage.releasePaymentBlock",
-                      "text": "Release payment block",
+                      "text": "{i18n>releasePaymentBlock}",
                       "enabled": "{= %{status} === 'awaiting_review' && %{recommendedAction} === 'release_payment_block' }"
                     },
                     "postSubsequentCredit": {
                       "press": "workbench.ext.ObjectPage.postSubsequentCredit",
-                      "text": "Post subsequent credit",
+                      "text": "{i18n>postSubsequentCredit}",
                       "enabled": "{= %{status} === 'awaiting_review' && %{recommendedAction} === 'post_subsequent_credit' }"
                     },
                     "prepareSupplierContact": {
                       "press": "workbench.ext.ObjectPage.prepareSupplierContact",
-                      "text": "Prepare supplier contact",
+                      "text": "{i18n>prepareSupplierContact}",
                       "enabled": "{= %{status} === 'awaiting_review' && (%{recommendedAction} === 'contact_supplier' || %{invoicingParty} !== '') }"
                     },
                     "dismissInvestigation": {
                       "press": "workbench.ext.ObjectPage.dismissInvestigation",
-                      "text": "Dismiss",
+                      "text": "{i18n>dismiss}",
                       "enabled": "{= %{status} === 'awaiting_review' }"
                     }
                   }

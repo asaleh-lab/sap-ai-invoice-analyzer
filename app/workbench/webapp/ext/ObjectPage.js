@@ -1,7 +1,9 @@
 sap.ui.define(["sap/m/MessageBox", "sap/m/Dialog", "sap/m/Button", "sap/m/TextArea"], function (MessageBox, Dialog, Button, TextArea) {
   "use strict";
-  const creditText =
-    "A new subsequent credit was posted. The original invoice was not modified and remains blocked. IsSubsequentDebitCredit is X. The document number is a demo document number, not an SAP number range.";
+  function text(key, args) {
+    const component = Object.values(sap.ui.core.Component.registry.all()).find((entry) => entry.getModel && entry.getModel("i18n"));
+    return component.getModel("i18n").getResourceBundle().getText(key, args);
+  }
 
   async function postAction(context, name, data) {
     const response = await fetch("/workbench/" + name, {
@@ -13,7 +15,7 @@ sap.ui.define(["sap/m/MessageBox", "sap/m/Dialog", "sap/m/Button", "sap/m/TextAr
       const body = await response.json().catch(function () {
         return {};
       });
-      MessageBox.error((body.error && body.error.message) || "The action was rejected.");
+      MessageBox.error((body.error && body.error.message) || text("actionRejected"));
       return null;
     }
     await context.requestSideEffects(["status", "paymentBlockingReason", "outcome", "closedAt"]);
@@ -42,7 +44,7 @@ sap.ui.define(["sap/m/MessageBox", "sap/m/Dialog", "sap/m/Button", "sap/m/TextAr
         investigationId: context.getProperty("ID"),
         actor: "local.reviewer",
       });
-      if (posted) MessageBox.information(creditText);
+      if (posted) MessageBox.information(text("creditPosted"));
     },
     prepareSupplierContact: async function (context) {
       context = caseContext(context);
@@ -51,23 +53,23 @@ sap.ui.define(["sap/m/MessageBox", "sap/m/Dialog", "sap/m/Button", "sap/m/TextAr
         investigationId: context.getProperty("ID"),
         actor: "local.reviewer",
       });
-      if (draft) MessageBox.information("Draft to " + draft.emailDraftTo + " was stored and was not sent.\n\n" + draft.emailDraftBody);
+      if (draft) MessageBox.information(text("draftStored", [draft.emailDraftTo, draft.emailDraftBody]));
     },
     dismissInvestigation: async function (context) {
       context = caseContext(context);
       if (!context || context.getProperty("status") !== "awaiting_review") return;
-      const reason = new TextArea({ width: "100%", rows: 4, placeholder: "Why are you dismissing this case?" });
+      const reason = new TextArea({ width: "100%", rows: 4, placeholder: text("dismissPlaceholder") });
       const dialog = new Dialog({
-        title: "Dismiss",
+        title: text("dismiss"),
         contentWidth: "24rem",
         content: reason,
         beginButton: new Button({
-          text: "OK",
+          text: text("ok"),
           type: "Emphasized",
           press: async function () {
             const value = reason.getValue().trim();
             if (!value) {
-              MessageBox.error("A dismiss reason is required.");
+              MessageBox.error(text("dismissReasonRequired"));
               return;
             }
             dialog.close();
@@ -79,7 +81,7 @@ sap.ui.define(["sap/m/MessageBox", "sap/m/Dialog", "sap/m/Button", "sap/m/TextAr
           },
         }),
         endButton: new Button({
-          text: "Cancel",
+          text: text("cancel"),
           press: function () {
             dialog.close();
           },

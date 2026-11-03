@@ -2,9 +2,9 @@
   <VBox>
     <SegmentedButton id="workbenchTabs" selectedKey="dashboard" selectionChange=".onWorkbenchTab" class="sapUiSmallMarginBottom">
       <items>
-        <SegmentedButtonItem key="dashboard" text="Dashboard" />
-        <SegmentedButtonItem key="pending" text="Pending" />
-        <SegmentedButtonItem key="processed" text="Processed" />
+        <SegmentedButtonItem key="dashboard" text="{i18n>dashboard}" />
+        <SegmentedButtonItem key="pending" text="{i18n>pending}" />
+        <SegmentedButtonItem key="processed" text="{i18n>processed}" />
       </items>
     </SegmentedButton>
     <VBox id="dashboardBody" class="workbenchDashboard" height="100%">
@@ -12,22 +12,22 @@
         <FlexItemData growFactor="1" baseSize="0%" />
       </layoutData>
       <Toolbar class="sapUiTinyMarginBottom">
-        <Title text="Case overview" level="H3" />
+        <Title text="{i18n>caseOverview}" level="H3" />
         <ToolbarSpacer />
-        <Button text="Refresh" icon="sap-icon://refresh" type="Transparent" press=".refreshSummary" />
+        <Button text="{i18n>refresh}" icon="sap-icon://refresh" type="Transparent" press=".refreshSummary" />
       </Toolbar>
       <HBox class="workbenchTiles">
-        <GenericTile class="workbenchTile" header="Pending" press=".showPending" frameType="OneByHalf">
+        <GenericTile class="workbenchTile" header="{i18n>pending}" press=".showPending" frameType="OneByHalf">
           <TileContent>
             <NumericContent value="{summary>/pending}" withMargin="false" />
           </TileContent>
         </GenericTile>
-        <GenericTile class="workbenchTile" header="Processed" press=".showProcessed" frameType="OneByHalf">
+        <GenericTile class="workbenchTile" header="{i18n>processed}" press=".showProcessed" frameType="OneByHalf">
           <TileContent>
             <NumericContent value="{summary>/closed}" withMargin="false" />
           </TileContent>
         </GenericTile>
-        <GenericTile class="workbenchTile" header="Contact drafts" frameType="OneByHalf">
+        <GenericTile class="workbenchTile" header="{i18n>contactDrafts}" frameType="OneByHalf">
           <TileContent>
             <NumericContent value="{summary>/contactDrafts}" withMargin="false" />
           </TileContent>
@@ -37,19 +37,19 @@
         <layoutData>
           <FlexItemData growFactor="1" baseSize="0%" />
         </layoutData>
-        <Panel class="workbenchPanel" headerText="Outcomes">
+        <Panel class="workbenchPanel" headerText="{i18n>outcomes}">
           <VBox class="workbenchOutcomeTiles">
-            <GenericTile class="workbenchTile" header="Released" frameType="OneByHalf">
+            <GenericTile class="workbenchTile" header="{i18n>released}" frameType="OneByHalf">
               <TileContent>
                 <NumericContent value="{summary>/released}" withMargin="false" />
               </TileContent>
             </GenericTile>
-            <GenericTile class="workbenchTile" header="Subsequent credit posted" frameType="OneByHalf">
+            <GenericTile class="workbenchTile" header="{i18n>subsequentCreditPosted}" frameType="OneByHalf">
               <TileContent>
                 <NumericContent value="{summary>/subsequentCreditPosted}" withMargin="false" />
               </TileContent>
             </GenericTile>
-            <GenericTile class="workbenchTile" header="Dismissed" frameType="OneByHalf">
+            <GenericTile class="workbenchTile" header="{i18n>dismissed}" frameType="OneByHalf">
               <TileContent>
                 <NumericContent value="{summary>/dismissed}" withMargin="false" />
               </TileContent>
@@ -66,24 +66,24 @@
             selectionMode="None"
             alternateRowColors="true"
             ariaLabelledBy="supplierGridTitle"
-            noData="No suppliers have pending cases."
+            noData="{i18n>noSuppliers}"
             rowsUpdated=".onSupplierRowsUpdated"
             visibleRowCount="10"
           >
             <t:extension>
               <OverflowToolbar>
-                <Title id="supplierGridTitle" text="Suppliers with pending cases" />
+                <Title id="supplierGridTitle" text="{i18n>suppliersPending}" />
               </OverflowToolbar>
             </t:extension>
             <t:columns>
               <t:Column sortProperty="supplierName" width="14rem">
-                <Label text="Supplier" />
+                <Label text="{i18n>supplier}" />
                 <t:template>
                   <ObjectStatus text="{summary>supplierName}" state="{= ${summary>highlighted} ? 'Indication05' : 'None' }" />
                 </t:template>
               </t:Column>
               <t:Column sortProperty="pendingCount" hAlign="End" width="6rem">
-                <Label text="Pending" />
+                <Label text="{i18n>pending}" />
                 <t:template>
                   <Text text="{summary>pendingCount}" />
                 </t:template>
@@ -91,7 +91,7 @@
               <t:Column width="8rem" hAlign="End">
                 <Label text="" />
                 <t:template>
-                  <Link text="Open pending" press=".showPending" />
+                  <Link text="{i18n>openPending}" press=".showPending" />
                 </t:template>
               </t:Column>
             </t:columns>

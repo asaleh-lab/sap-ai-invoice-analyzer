@@ -1,10 +1,18 @@
 sap.ui.define(["sap/m/FlexItemData", "sap/ui/core/Fragment", "sap/ui/model/json/JSONModel"], function (FlexItemData, Fragment, JSONModel) {
   "use strict";
   return {
+    _appI18nModel: function () {
+      const owner = this.getOwnerComponent && this.getOwnerComponent();
+      const app = owner && owner.getAppComponent ? owner.getAppComponent() : owner;
+      return (app && app.getModel && app.getModel("i18n")) || (owner && owner.getModel && owner.getModel("i18n"));
+    },
     onAfterRendering: function () {
       if (this._summary) return;
       const view = this.getView();
+      const i18n = this._appI18nModel();
+      if (i18n) view.setModel(i18n, "i18n");
       Fragment.load({ id: view.getId(), name: "workbench.ext.Dashboard", controller: this }).then((panel) => {
+        if (i18n) panel.setModel(i18n, "i18n");
         this._summary = panel;
         const page = view.getContent()[0];
         const content = page && page.getContent && page.getContent();
@@ -77,8 +85,8 @@ sap.ui.define(["sap/m/FlexItemData", "sap/ui/core/Fragment", "sap/ui/model/json/
       this.getView().findAggregatedObjects(true).forEach((control) => {
         if (!control.isA || control === own) return;
         const items = control.getItems ? control.getItems() : [];
-        const texts = items.map((item) => (item.getText ? item.getText() : ""));
-        if (texts.some((text) => text.startsWith("Pending")) && texts.some((text) => text.startsWith("Processed"))) this._hideTabStrip(control);
+        const keys = items.map((item) => (item.getKey ? item.getKey() : ""));
+        if (keys.indexOf("pending") >= 0 && keys.indexOf("history") >= 0) this._hideTabStrip(control);
       });
     },
     onWorkbenchTab: function (event) {
@@ -88,8 +96,8 @@ sap.ui.define(["sap/m/FlexItemData", "sap/ui/core/Fragment", "sap/ui/model/json/
       if (body) body.setVisible(key === "dashboard");
       this._showCaseList(key !== "dashboard");
       this._showFilters(key !== "dashboard");
-      if (key === "pending") this._selectCaseView("Pending");
-      if (key === "processed") this._selectCaseView("Processed");
+      if (key === "pending") this._selectCaseView("pending");
+      if (key === "processed") this._selectCaseView("history");
       this._prepareCaseTable();
     },
     showPending: function () {
@@ -207,20 +215,20 @@ sap.ui.define(["sap/m/FlexItemData", "sap/ui/core/Fragment", "sap/ui/model/json/
         if (dom) dom.style.minHeight = visible ? "70vh" : "";
       }
     },
-    _selectCaseView: function (label) {
+    _selectCaseView: function (key) {
       const own = this.byId("workbenchTabs");
       const controls = this.getView().findAggregatedObjects(true);
       controls.forEach((control) => {
         if (!control.isA || own === control) return;
         if (control.isA("sap.m.IconTabBar")) {
-          const item = (control.getItems() || []).find((entry) => entry.getText && entry.getText().startsWith(label));
+          const item = (control.getItems() || []).find((entry) => entry.getKey && entry.getKey() === key);
           if (!item) return;
           this._hideTabStrip(control);
           control.setSelectedKey(item.getKey());
           control.fireSelect({ key: item.getKey(), item: item });
         }
         if (control.isA("sap.m.SegmentedButton")) {
-          const item = (control.getItems() || []).find((entry) => entry.getText && entry.getText().startsWith(label));
+          const item = (control.getItems() || []).find((entry) => entry.getKey && entry.getKey() === key);
           if (!item) return;
           this._hideTabStrip(control);
           control.setSelectedKey(item.getKey());

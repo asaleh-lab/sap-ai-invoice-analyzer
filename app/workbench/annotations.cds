@@ -5,7 +5,7 @@ annotate InvestigationService.Investigations with @(
   Capabilities.UpdateRestrictions: { Updatable: false },
   Capabilities.DeleteRestrictions: { Deletable: false },
   UI.SelectionPresentationVariant: {
-    Text: 'Pending',
+    Text: '{i18n>pending}',
     SelectionVariant: {
       SelectOptions: [{
         PropertyName: status,
@@ -22,7 +22,7 @@ annotate InvestigationService.Investigations with @(
     },
   },
   UI.SelectionPresentationVariant #History: {
-    Text: 'Processed',
+    Text: '{i18n>processed}',
     SelectionVariant: {
       SelectOptions: [{
         PropertyName: status,
@@ -37,61 +37,61 @@ annotate InvestigationService.Investigations with @(
     },
   },
   UI.HeaderInfo: {
-    TypeName: 'Investigation',
-    TypeNamePlural: 'Pending investigations',
+    TypeName: '{i18n>investigation}',
+    TypeNamePlural: '{i18n>investigations}',
     Title: { Value: supplierInvoice },
     Description: { Value: supplierName },
   },
   UI.SelectionFields: [ status ],
   UI.LineItem: [
-    { Value: supplierName, Label: 'Supplier' },
-    { Value: supplierInvoiceIdByInvoicingParty, Label: 'Supplier invoice reference' },
-    { Value: invoiceGrossAmount, Label: 'Gross amount' },
-    { Value: documentCurrency, Label: 'Currency' },
-    { Value: paymentBlockingReason, Label: 'Payment block reason' },
-    { Value: blockCategory, Label: 'Calculated block category' },
-    { Value: status, Label: 'Status' },
+    { Value: supplierName, Label: '{i18n>supplier}' },
+    { Value: supplierInvoiceIdByInvoicingParty, Label: '{i18n>supplierInvoiceReference}' },
+    { Value: invoiceGrossAmount, Label: '{i18n>grossAmount}' },
+    { Value: documentCurrency, Label: '{i18n>currency}' },
+    { Value: paymentBlockingReason, Label: '{i18n>paymentBlockReason}' },
+    { Value: blockCategory, Label: '{i18n>blockCategory}' },
+    { Value: status, Label: '{i18n>status}' },
   ],
   UI.LineItem #History: [
-    { Value: supplierName, Label: 'Supplier' },
-    { Value: supplierInvoiceIdByInvoicingParty, Label: 'Supplier invoice reference' },
-    { Value: invoiceGrossAmount, Label: 'Gross amount' },
-    { Value: documentCurrency, Label: 'Currency' },
-    { Value: outcome, Label: 'Outcome' },
-    { Value: closedAt, Label: 'Closed' },
+    { Value: supplierName, Label: '{i18n>supplier}' },
+    { Value: supplierInvoiceIdByInvoicingParty, Label: '{i18n>supplierInvoiceReference}' },
+    { Value: invoiceGrossAmount, Label: '{i18n>grossAmount}' },
+    { Value: documentCurrency, Label: '{i18n>currency}' },
+    { Value: outcome, Label: '{i18n>outcome}' },
+    { Value: closedAt, Label: '{i18n>closed}' },
   ],
   UI.FieldGroup #Header: {
-    Label: 'Invoice header',
+    Label: '{i18n>invoiceHeader}',
     Data: [
-      { Value: supplierInvoice, Label: 'Supplier invoice' },
-      { Value: fiscalYear, Label: 'Fiscal year' },
-      { Value: supplierName, Label: 'Supplier' },
-      { Value: supplierInvoiceIdByInvoicingParty, Label: 'Supplier invoice reference' },
-      { Value: invoiceGrossAmount, Label: 'Gross amount' },
-      { Value: documentCurrency, Label: 'Currency' },
-      { Value: paymentBlockingReason, Label: 'Payment block reason' },
-      { Value: blockCategory, Label: 'Calculated block category' },
-      { Value: status, Label: 'Status' },
-      { Value: recommendedAction, Label: 'Recommendation' },
+      { Value: supplierInvoice, Label: '{i18n>supplierInvoice}' },
+      { Value: fiscalYear, Label: '{i18n>fiscalYear}' },
+      { Value: supplierName, Label: '{i18n>supplier}' },
+      { Value: supplierInvoiceIdByInvoicingParty, Label: '{i18n>supplierInvoiceReference}' },
+      { Value: invoiceGrossAmount, Label: '{i18n>grossAmount}' },
+      { Value: documentCurrency, Label: '{i18n>currency}' },
+      { Value: paymentBlockingReason, Label: '{i18n>paymentBlockReason}' },
+      { Value: blockCategory, Label: '{i18n>blockCategory}' },
+      { Value: status, Label: '{i18n>status}' },
+      { Value: recommendedAction, Label: '{i18n>recommendation}' },
     ],
   },
   UI.FieldGroup #Variance: {
-    Label: 'Variance',
+    Label: '{i18n>variance}',
     Data: [
-      { Value: priceDifference, Label: 'Price difference' },
-      { Value: quantityDifference, Label: 'Quantity difference' },
-      { Value: projectTolerance, Label: 'Tolerance' },
-      { Value: narrative, Label: 'Narrative' },
+      { Value: priceDifference, Label: '{i18n>priceDifference}' },
+      { Value: quantityDifference, Label: '{i18n>quantityDifference}' },
+      { Value: projectTolerance, Label: '{i18n>tolerance}' },
+      { Value: narrative, Label: '{i18n>narrative}' },
     ],
   },
   UI.Facets: [
-    { $Type: 'UI.ReferenceFacet', Label: 'Invoice header', Target: '@UI.FieldGroup#Header' },
-    { $Type: 'UI.ReferenceFacet', Label: 'Variance', Target: '@UI.FieldGroup#Variance' },
-    { $Type: 'UI.ReferenceFacet', Label: 'PO reference items', Target: 'poItems/@UI.LineItem' },
-    { $Type: 'UI.ReferenceFacet', Label: 'Facts', Target: 'factFindings/@UI.LineItem' },
-    { $Type: 'UI.ReferenceFacet', Label: 'Assumptions', Target: 'assumptionFindings/@UI.LineItem' },
-    { $Type: 'UI.ReferenceFacet', Label: 'Missing', Target: 'missingFindings/@UI.LineItem' },
-    { $Type: 'UI.ReferenceFacet', Label: 'Evidence', Target: 'evidence/@UI.LineItem' },
+    { $Type: 'UI.ReferenceFacet', Label: '{i18n>invoiceHeader}', Target: '@UI.FieldGroup#Header' },
+    { $Type: 'UI.ReferenceFacet', Label: '{i18n>variance}', Target: '@UI.FieldGroup#Variance' },
+    { $Type: 'UI.ReferenceFacet', Label: '{i18n>poItems}', Target: 'poItems/@UI.LineItem' },
+    { $Type: 'UI.ReferenceFacet', Label: '{i18n>facts}', Target: 'factFindings/@UI.LineItem' },
+    { $Type: 'UI.ReferenceFacet', Label: '{i18n>assumptions}', Target: 'assumptionFindings/@UI.LineItem' },
+    { $Type: 'UI.ReferenceFacet', Label: '{i18n>missing}', Target: 'missingFindings/@UI.LineItem' },
+    { $Type: 'UI.ReferenceFacet', Label: '{i18n>evidence}', Target: 'evidence/@UI.LineItem' },
   ],
 );
 
@@ -102,25 +102,25 @@ annotate InvestigationService.Investigations with {
 
 annotate InvestigationService.SupplierInvoicePoItems with @(
   UI.LineItem: [
-    { Value: PurchaseOrder, Label: 'Purchase order' },
-    { Value: PurchaseOrderItem, Label: 'Purchase order item' },
-    { Value: SupplierInvoiceItemAmount, Label: 'Supplier invoice item amount' },
-    { Value: QuantityInPurchaseOrderUnit, Label: 'Quantity' },
-    { Value: PurchaseOrderQuantityUnit, Label: 'Unit' },
+    { Value: PurchaseOrder, Label: '{i18n>purchaseOrder}' },
+    { Value: PurchaseOrderItem, Label: '{i18n>purchaseOrderItem}' },
+    { Value: SupplierInvoiceItemAmount, Label: '{i18n>supplierInvoiceItemAmount}' },
+    { Value: QuantityInPurchaseOrderUnit, Label: '{i18n>quantity}' },
+    { Value: PurchaseOrderQuantityUnit, Label: '{i18n>unit}' },
   ],
 );
 
 annotate InvestigationService.Findings with @(
   UI.LineItem: [
-    { Value: text, Label: 'Text' },
+    { Value: text, Label: '{i18n>text}' },
   ],
 );
 
 annotate InvestigationService.Evidence with @(
   UI.LineItem: [
-    { Value: api, Label: 'API' },
-    { Value: entity, Label: 'Entity' },
-    { Value: field, Label: 'Field' },
-    { Value: value, Label: 'Value' },
+    { Value: api, Label: '{i18n>api}' },
+    { Value: entity, Label: '{i18n>entity}' },
+    { Value: field, Label: '{i18n>field}' },
+    { Value: value, Label: '{i18n>value}' },
   ],
 );
