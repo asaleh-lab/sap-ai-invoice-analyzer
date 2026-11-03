@@ -36,7 +36,7 @@ The publisher is a script or a button that POSTs the CloudEvent onto the simulat
 | --- | --- |
 | CAP Node.js app, TypeScript handlers | CDS model, SQLite, simulated SAP reads, simulated Event Mesh inbox, investigation API, approved writes, static host for the UI in Compose |
 | SQLite file | Simulated documents, investigations, inbox. File on a volume so a restart keeps cases. |
-| Advisor module, TypeScript and LangGraph.js | Inside the CAP app. Chooses tools the workbench passes in, and returns a recommendation. Does not import the CDS model. Scripted policy when `LLM_API_KEY` is empty. |
+| Advisor module, TypeScript and LangGraph.js | Inside the CAP app. Chooses tools the workbench passes in, and returns a recommendation. Does not import the CDS model. Scripted policy when `invoiceAdvisor.apiKey` is empty. |
 | Fiori elements workbench | List report of pending cases, object page for one investigation, history and a small dashboard |
 | Demo publisher | Sends the three sample events to the simulated topic |
 
@@ -102,7 +102,7 @@ Accept / proceed does not mean "post the invoice" and does not mean "pay the sup
 | SQLite file | One file, no server, matches CAP's local guide. In-memory SQLite stays available for unit tests. |
 | LangGraph.js inside the advisor module | Tool calling stays out of the invoice handlers. The workbench passes the tools in. |
 | Fiori elements | The SAP UI for this workbench. A list report and an object page on `InvestigationService`, served by the CAP app. |
-| OpenAI-compatible HTTP | `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`. Empty key selects the scripted policy. |
+| OpenAI-compatible HTTP | `invoiceAdvisor` in `.cdsrc.json` (`model`, `baseUrl`, `tolerance`). `apiKey` in `.cdsrc-private.json`. Process env `CDS_invoiceAdvisor_*` overrides both. Empty key selects the scripted policy. |
 | Docker Compose | One app and a SQLite volume. The image uses Node.js 26 LTS. |
 
 Versions checked on npm on 2 November 2026. Pin these in `package.json` when the ticket that adds the dependency lands.

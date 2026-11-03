@@ -37,7 +37,7 @@ copy .env.example .env
 docker compose up --build
 ```
 
-The workbench is expected at `http://localhost:4004`. Leave `LLM_API_KEY` empty and the advisor follows a fixed policy. It still calls the tools. Set `LLM_BASE_URL`, `LLM_API_KEY`, and `LLM_MODEL` if you want a model to choose the order of those calls and write the explanation.
+Send the sample events from [http://localhost:4004/publisher](http://localhost:4004/publisher). Open the workbench at [http://localhost:4004/workbench-ui](http://localhost:4004/workbench-ui). Model name, base URL, and the price tolerance live in `.cdsrc.json`. The API key lives in `.cdsrc-private.json` (copy `.cdsrc-private.json.example`). Leave `apiKey` empty and the advisor follows a fixed policy. It still calls the tools. A deployed environment can override any of these with `CDS_invoiceAdvisor_apiKey`, `CDS_invoiceAdvisor_model`, `CDS_invoiceAdvisor_baseUrl`, and `CDS_invoiceAdvisor_tolerance`.
 
 No SAP host, client, or user is required.
 

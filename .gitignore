@@ -4,5 +4,6 @@ db.sqlite
 db.sqlite-shm
 db.sqlite-wal
 .env
+.cdsrc-private.json
 .scratch/dashboard.png
 .scratch/btn-keep/

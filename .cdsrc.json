@@ -1,0 +1,7 @@
+{
+  "invoiceAdvisor": {
+    "model": "gpt-4o-mini",
+    "baseUrl": "https://api.openai.com/v1",
+    "tolerance": 0.5
+  }
+}

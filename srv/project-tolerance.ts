@@ -1,1 +1,3 @@
-export const projectTolerance = 0.5;
+import { advisorSettings } from "../advisor/config.ts";
+
+export const projectTolerance = advisorSettings().tolerance;
