@@ -30,6 +30,10 @@ test("outcome labels follow a mocked summary", () => {
   assert.match(fragment, /press=".refreshSummary"/);
   const controller = readFileSync("app/workbench/webapp/ext/ListReport.controller.js", "utf8");
   assert.match(controller, /_showFilters\(key !== "dashboard"\)/);
+  assert.match(fragment, /sap\.ui\.table/);
+  assert.match(fragment, /rows="\{summary>\/suppliers\}"/);
+  assert.match(fragment, /PagingButton/);
+  assert.doesNotMatch(controller, /slice\(0, 4\)/);
 });
 
 test("pending workbench lists simulated cases and hides retry until a failure", async () => {

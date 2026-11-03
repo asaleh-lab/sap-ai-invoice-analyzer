@@ -27,7 +27,9 @@ sap.ui.define(["sap/m/FlexItemData", "sap/ui/core/Fragment", "sap/ui/model/json/
             releasedShare: 0,
             creditShare: 0,
             dismissedShare: 0,
-            topSuppliers: [],
+            suppliers: [],
+            supplierPage: 1,
+            supplierPages: 1,
           }),
           "summary",
         );
@@ -103,11 +105,45 @@ sap.ui.define(["sap/m/FlexItemData", "sap/ui/core/Fragment", "sap/ui/model/json/
       summary.releasedShare = ((summary.released || 0) / scale) * 100;
       summary.creditShare = ((summary.subsequentCreditPosted || 0) / scale) * 100;
       summary.dismissedShare = ((summary.dismissed || 0) / scale) * 100;
-      summary.topSuppliers = (summary.suppliers || [])
+      summary.suppliers = (summary.suppliers || [])
         .slice()
-        .sort((left, right) => right.pendingCount - left.pendingCount || left.supplierName.localeCompare(right.supplierName))
-        .slice(0, 4);
-      this.getView().getModel("summary").setData(summary);
+        .sort((left, right) => right.pendingCount - left.pendingCount || left.supplierName.localeCompare(right.supplierName));
+      summary.supplierPage = 1;
+      summary.supplierPages = 1;
+      const model = this.getView().getModel("summary");
+      model.setSizeLimit(Math.max(summary.suppliers.length, 100));
+      model.setData(summary);
+      setTimeout(() => this._syncSupplierPager(), 0);
+    },
+    onSupplierRowsUpdated: function () {
+      this._syncSupplierPager();
+    },
+    onSupplierPagePrevious: function () {
+      this._moveSupplierPage(-1);
+    },
+    onSupplierPageNext: function () {
+      this._moveSupplierPage(1);
+    },
+    _moveSupplierPage: function (direction) {
+      const table = this.byId("supplierGrid");
+      if (!table) return;
+      const visible = Math.max(table.getVisibleRowCount(), 1);
+      const total = (this.getView().getModel("summary").getProperty("/suppliers") || []).length;
+      const lastStart = Math.max(total - visible, 0);
+      const next = Math.min(Math.max(table.getFirstVisibleRow() + direction * visible, 0), lastStart);
+      table.setFirstVisibleRow(next);
+      this._syncSupplierPager();
+    },
+    _syncSupplierPager: function () {
+      const table = this.byId("supplierGrid");
+      const model = this.getView() && this.getView().getModel("summary");
+      if (!table || !model) return;
+      const visible = Math.max(table.getVisibleRowCount(), 1);
+      const total = (model.getProperty("/suppliers") || []).length;
+      const pages = Math.max(Math.ceil(total / visible), 1);
+      const page = Math.min(Math.floor(table.getFirstVisibleRow() / visible) + 1, pages);
+      model.setProperty("/supplierPages", pages);
+      model.setProperty("/supplierPage", page);
     },
     _hideTabStrip: function (control) {
       const dom = control.getDomRef && control.getDomRef();

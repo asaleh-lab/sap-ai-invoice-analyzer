@@ -1,4 +1,4 @@
-<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:t="sap.ui.table" xmlns:rowmodes="sap.ui.table.rowmodes">
   <VBox>
     <SegmentedButton id="workbenchTabs" selectedKey="dashboard" selectionChange=".onWorkbenchTab" class="sapUiSmallMarginBottom">
       <items>
@@ -7,7 +7,10 @@
         <SegmentedButtonItem key="processed" text="Processed" />
       </items>
     </SegmentedButton>
-    <VBox id="dashboardBody" class="workbenchDashboard">
+    <VBox id="dashboardBody" class="workbenchDashboard" height="100%">
+      <layoutData>
+        <FlexItemData growFactor="1" baseSize="0%" />
+      </layoutData>
       <Toolbar class="sapUiTinyMarginBottom">
         <Title text="Case overview" level="H3" />
         <ToolbarSpacer />
@@ -31,6 +34,9 @@
         </GenericTile>
       </HBox>
       <HBox class="workbenchPanels">
+        <layoutData>
+          <FlexItemData growFactor="1" baseSize="0%" />
+        </layoutData>
         <Panel class="workbenchPanel" headerText="Outcomes">
           <VBox class="workbenchOutcomeTiles">
             <GenericTile class="workbenchTile" header="Released" frameType="OneByHalf">
@@ -50,22 +56,61 @@
             </GenericTile>
           </VBox>
         </Panel>
-        <Panel class="workbenchPanel" headerText="Suppliers with pending cases">
-          <Table items="{summary>/topSuppliers}" noDataText="No suppliers have pending cases.">
-            <columns>
-              <Column><Text text="Supplier" /></Column>
-              <Column width="6rem" hAlign="End"><Text text="Pending" /></Column>
-              <Column width="8rem" />
-            </columns>
-            <ColumnListItem>
-              <cells>
-                <ObjectStatus text="{summary>supplierName}" state="{= ${summary>highlighted} ? 'Indication05' : 'None' }" />
-                <Text text="{summary>pendingCount}" />
-                <Link text="Open pending" press=".showPending" />
-              </cells>
-            </ColumnListItem>
-          </Table>
-        </Panel>
+        <VBox class="workbenchSupplierPanel">
+          <layoutData>
+            <FlexItemData growFactor="1" baseSize="0%" />
+          </layoutData>
+          <t:Table
+            id="supplierGrid"
+            rows="{summary>/suppliers}"
+            selectionMode="None"
+            alternateRowColors="true"
+            height="100%"
+            ariaLabelledBy="supplierGridTitle"
+            noData="No suppliers have pending cases."
+            rowsUpdated=".onSupplierRowsUpdated"
+          >
+            <t:extension>
+              <OverflowToolbar>
+                <Title id="supplierGridTitle" text="Suppliers with pending cases" />
+              </OverflowToolbar>
+            </t:extension>
+            <t:rowMode>
+              <rowmodes:Auto minRowCount="3" />
+            </t:rowMode>
+            <t:columns>
+              <t:Column sortProperty="supplierName" width="14rem">
+                <Label text="Supplier" />
+                <t:template>
+                  <ObjectStatus text="{summary>supplierName}" state="{= ${summary>highlighted} ? 'Indication05' : 'None' }" />
+                </t:template>
+              </t:Column>
+              <t:Column sortProperty="pendingCount" hAlign="End" width="6rem">
+                <Label text="Pending" />
+                <t:template>
+                  <Text text="{summary>pendingCount}" />
+                </t:template>
+              </t:Column>
+              <t:Column width="8rem" hAlign="End">
+                <Label text="" />
+                <t:template>
+                  <Link text="Open pending" press=".showPending" />
+                </t:template>
+              </t:Column>
+            </t:columns>
+            <t:footer>
+              <OverflowToolbar>
+                <ToolbarSpacer />
+                <PagingButton
+                  position="{summary>/supplierPage}"
+                  count="{summary>/supplierPages}"
+                  previousButtonPress=".onSupplierPagePrevious"
+                  nextButtonPress=".onSupplierPageNext"
+                />
+              </OverflowToolbar>
+            </t:footer>
+          </t:Table>
+        </VBox>
       </HBox>
     </VBox>
   </VBox>

@@ -1,5 +1,9 @@
 .workbenchDashboard {
-  padding: 0.5rem 0 1rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  padding: 0.5rem 0 0;
 }
 
 .workbenchTiles {
@@ -15,6 +19,15 @@
 .workbenchPanels {
   gap: 1rem;
   align-items: stretch;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.workbenchSupplierPanel {
+  flex: 1 1 auto;
+  min-width: 18rem;
+  min-height: 0;
+  height: 100%;
 }
 
 .workbenchPanel {
