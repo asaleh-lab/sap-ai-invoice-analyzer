@@ -11,11 +11,18 @@
           fiori2: {
             componentData: {
               config: {
+                enableSearch: false,
                 search: "hidden",
+                enablePersonalization: false,
+                enableRecentActivity: false,
                 rootIntent: "workbench-display",
               },
             },
           },
+        },
+        services: {
+          Search: { config: { searchBusinessObjects: false } },
+          EndUserFeedback: { config: { enabled: false } },
         },
         applications: {
           "workbench-display": {
@@ -40,6 +47,8 @@
       data-sap-ui-async="true"
       data-sap-ui-compatVersion="edge"
       data-sap-ui-language="en"
+      data-sap-ui-flexibilityServices='[{"connector":"LocalStorageConnector"}]'
+      data-sap-ui-xx-viewCache="false"
       data-sap-ui-resourceroots='{"workbench": "../"}'
       data-sap-ui-frameOptions="trusted"
     ></script>

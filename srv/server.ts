@@ -11,8 +11,15 @@ import { registerWorkbenchSummary } from "./summary.ts";
 const workbenchRoot = path.resolve("app/workbench/webapp");
 
 cds.on("bootstrap", (app) => {
+  app.use((_req, res, next) => {
+    res.setHeader("Permissions-Policy", "unload=*");
+    next();
+  });
   app.get("/health", (_req, res) => {
     res.json({ status: "ok", mode: "simulated-s4" });
+  });
+  app.get(/\/appconfig\/fioriSandboxConfig\.json$/, (_req, res) => {
+    res.json({});
   });
   app.get("/workbench-ui", (_req, res) => {
     res.redirect("/workbench-ui/test/flpSandbox.html");
