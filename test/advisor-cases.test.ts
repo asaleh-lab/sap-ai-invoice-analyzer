@@ -31,17 +31,6 @@ test("scripted policy stores the three seeded recommendations", async () => {
     assert.equal(Number(match.priceDifference), 0);
     assert.equal(Number(match.quantityDifference), 0);
 
-    for (const row of [price, short, match]) {
-      const detail = await expand(ctx, String(row.ID));
-      assert.equal(detail.findings.some((finding) => finding.kind === "fact"), true);
-      assert.equal(
-        detail.evidence.some((item) => item.api === "API_SUPPLIERINVOICE_PROCESS_SRV" && item.field === "PaymentBlockingReason"),
-        true,
-      );
-    }
-    const priceDetail = await expand(ctx, String(price.ID));
-    assert.equal(priceDetail.evidence.some((item) => item.field === "SupplierInvoiceItemAmount"), true);
-    assert.equal(priceDetail.evidence.some((item) => item.field === "NetPriceAmount"), true);
     assert.match(String(price.narrative), /5100001001/);
     assert.match(String(price.narrative), /unchanged/);
   } finally {
@@ -57,7 +46,7 @@ test("a mismatched recommendation fails closed and retry stops after three attem
     assert.equal(row.status, "investigation_failed");
     assert.notEqual(row.recommendedAction, "release_payment_block");
     const failed = await expand(ctx, String(row.ID));
-    assert.equal(failed.findings.some((finding) => finding.kind === "missing"), true);
+    assert.match(failed.narrative, /refused/);
 
     const inbox = await inboxRow(ctx, "evt-mismatch");
     assert.equal(Number(inbox.attemptCount), 1);
@@ -146,14 +135,12 @@ async function openCase(ctx: Ctx, id: string, supplierInvoice: string): Promise<
 
 async function expand(ctx: Ctx, id: string): Promise<{
   status: string;
-  findings: Array<{ kind: string }>;
-  evidence: Array<{ api: string; field: string }>;
+  narrative: string;
 }> {
-  const response = await fetch(`${ctx.base}/workbench/Investigations(${id})?$expand=findings,evidence`);
+  const response = await fetch(`${ctx.base}/workbench/Investigations(${id})`);
   return (await response.json()) as {
     status: string;
-    findings: Array<{ kind: string }>;
-    evidence: Array<{ api: string; field: string }>;
+    narrative: string;
   };
 }
 

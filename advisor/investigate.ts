@@ -23,21 +23,11 @@ export type InvestigateRequest = {
   tools: InvestigateTools;
 };
 
-export type EvidenceRow = {
-  api: string;
-  entity: string;
-  objectKey: string;
-  field: string;
-  value: string;
-};
-
 export type Advice = {
   recommendedAction: string;
   narrative: string;
   priceDifference: string;
   quantityDifference: string;
-  findings: Array<{ kind: "fact" | "assumption" | "missing"; text: string }>;
-  evidence: EvidenceRow[];
   toolsCalled: string[];
   comparable: boolean;
   priceDifferenceNumber: number;
@@ -197,8 +187,6 @@ function adviceFromBag(
   const narrative =
     model?.narrative ||
     `Supplier invoice ${supplierInvoice} is blocked. The price difference is ${priceText} and the quantity difference is ${quantityText}. The recommended action is ${action}. The invoice is unchanged.`;
-  const invoice = asRecord(bag.invoice);
-  const block = text(invoice?.PaymentBlockingReason);
   return {
     recommendedAction: action,
     narrative,
@@ -208,62 +196,7 @@ function adviceFromBag(
     priceDifferenceNumber: price,
     quantityDifferenceNumber: quantity,
     toolsCalled: called,
-    findings: [
-      {
-        kind: "fact",
-        text: `Payment block ${block} is set on supplier invoice ${supplierInvoice}.`,
-      },
-      {
-        kind: "assumption",
-        text: "The tolerance 0.50 is project configuration and is not SAP tolerance customizing.",
-      },
-    ],
-    evidence: evidenceRows(bag),
   };
-}
-
-function evidenceRows(bag: Record<string, unknown>): EvidenceRow[] {
-  const rows: EvidenceRow[] = [];
-  const invoice = asRecord(bag.invoice);
-  if (invoice) {
-    rows.push({
-      api: "API_SUPPLIERINVOICE_PROCESS_SRV",
-      entity: "A_SupplierInvoice",
-      objectKey: `${text(invoice.SupplierInvoice)}/${text(invoice.FiscalYear)}`,
-      field: "PaymentBlockingReason",
-      value: text(invoice.PaymentBlockingReason),
-    });
-    for (const item of items(invoice)) {
-      rows.push({
-        api: "API_SUPPLIERINVOICE_PROCESS_SRV",
-        entity: "A_SuplrInvcItemPurOrdRef",
-        objectKey: `${text(invoice.SupplierInvoice)}/${text(invoice.FiscalYear)}/${text(item.SupplierInvoiceItem)}`,
-        field: "SupplierInvoiceItemAmount",
-        value: text(item.SupplierInvoiceItemAmount),
-      });
-    }
-  }
-  const order = asRecord(bag.purchaseOrder);
-  for (const item of itemsOf(order, "to_PurchaseOrderItem")) {
-    rows.push({
-      api: "API_PURCHASEORDER_PROCESS_SRV",
-      entity: "A_PurchaseOrderItem",
-      objectKey: `${text(item.PurchaseOrder)}/${text(item.PurchaseOrderItem)}`,
-      field: "NetPriceAmount",
-      value: text(item.NetPriceAmount),
-    });
-  }
-  const receipts = asRecord(bag.goodsReceipts);
-  for (const item of itemsOf(receipts, "items")) {
-    rows.push({
-      api: "API_MATERIAL_DOCUMENT_SRV",
-      entity: "A_MaterialDocumentItem",
-      objectKey: `${text(item.MaterialDocument)}/${text(item.MaterialDocumentYear)}/${text(item.MaterialDocumentItem)}`,
-      field: "QuantityInEntryUnit",
-      value: text(item.QuantityInEntryUnit),
-    });
-  }
-  return rows;
 }
 
 async function call(

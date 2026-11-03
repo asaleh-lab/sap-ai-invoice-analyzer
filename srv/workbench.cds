@@ -13,13 +13,7 @@ service InvestigationService @(path: '/workbench') {
     end as blockCategory : String(20),
     poItems : Association to many sim.SupplierInvoicePoItems
       on poItems.invoice.SupplierInvoice = supplierInvoice
-      and poItems.invoice.FiscalYear = fiscalYear,
-    factFindings : Association to many invc.Findings
-      on factFindings.investigation = $self and factFindings.kind = 'fact',
-    assumptionFindings : Association to many invc.Findings
-      on assumptionFindings.investigation = $self and assumptionFindings.kind = 'assumption',
-    missingFindings : Association to many invc.Findings
-      on missingFindings.investigation = $self and missingFindings.kind = 'missing'
+      and poItems.invoice.FiscalYear = fiscalYear
   };
   @readonly entity EventInbox as projection on invc.EventInbox;
   action retryInvestigation(ID: UUID);

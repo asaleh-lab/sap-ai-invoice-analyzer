@@ -88,10 +88,6 @@ annotate InvestigationService.Investigations with @(
     { $Type: 'UI.ReferenceFacet', Label: '{i18n>invoiceHeader}', Target: '@UI.FieldGroup#Header' },
     { $Type: 'UI.ReferenceFacet', Label: '{i18n>variance}', Target: '@UI.FieldGroup#Variance' },
     { $Type: 'UI.ReferenceFacet', Label: '{i18n>poItems}', Target: 'poItems/@UI.LineItem' },
-    { $Type: 'UI.ReferenceFacet', Label: '{i18n>facts}', Target: 'factFindings/@UI.LineItem' },
-    { $Type: 'UI.ReferenceFacet', Label: '{i18n>assumptions}', Target: 'assumptionFindings/@UI.LineItem' },
-    { $Type: 'UI.ReferenceFacet', Label: '{i18n>missing}', Target: 'missingFindings/@UI.LineItem' },
-    { $Type: 'UI.ReferenceFacet', Label: '{i18n>evidence}', Target: 'evidence/@UI.LineItem' },
   ],
 );
 
@@ -107,20 +103,5 @@ annotate InvestigationService.SupplierInvoicePoItems with @(
     { Value: SupplierInvoiceItemAmount, Label: '{i18n>supplierInvoiceItemAmount}' },
     { Value: QuantityInPurchaseOrderUnit, Label: '{i18n>quantity}' },
     { Value: PurchaseOrderQuantityUnit, Label: '{i18n>unit}' },
-  ],
-);
-
-annotate InvestigationService.Findings with @(
-  UI.LineItem: [
-    { Value: text, Label: '{i18n>text}' },
-  ],
-);
-
-annotate InvestigationService.Evidence with @(
-  UI.LineItem: [
-    { Value: api, Label: '{i18n>api}' },
-    { Value: entity, Label: '{i18n>entity}' },
-    { Value: field, Label: '{i18n>field}' },
-    { Value: value, Label: '{i18n>value}' },
   ],
 );

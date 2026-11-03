@@ -265,7 +265,7 @@ Errors: unknown invoice `NOT_FOUND`.
 
 The agent may call tools in any order. The service that stores the recommendation rejects a result unless:
 
-1. `get_supplier_invoice` was called for this case's invoice key, and the evidence rows include that response.
+1. `get_supplier_invoice` was called for this case's invoice key.
 2. Every cited amount equals a field on a tool response or a field on `calculate_invoice_variance`.
 3. `recommendedAction` is one of `release_payment_block`, `post_subsequent_credit`, `contact_supplier`, `dismiss`, `insufficient_evidence`.
 4. `post_subsequent_credit` is allowed only when `comparable` is true, quantity difference is zero, and price difference is greater than the project tolerance.
@@ -273,16 +273,6 @@ The agent may call tools in any order. The service that stores the recommendatio
 6. Quantity difference above zero, or `comparable` false, cannot recommend release or subsequent credit. The allowed actions are `contact_supplier`, `dismiss`, or `insufficient_evidence`.
 
 The scripted policy, used when no model key is configured, implements those rules directly after calling invoice, then purchase order and goods receipts when a PO reference exists, then the variance tool, then the business partner. History is called when `InvoicingParty` is present. A model may skip history. It may not skip the invoice read or the variance tool when a PO reference exists.
-
-Findings stored with the recommendation:
-
-| Kind | Meaning |
-| --- | --- |
-| `fact` | A sentence that quotes evidence. |
-| `assumption` | A project rule, such as the tolerance, stated as a rule. |
-| `missing` | A read that returned no row or a unit that blocked comparison. |
-
-Evidence row: `api`, `entity`, `key`, `field`, `value`. Example: api `API_SUPPLIERINVOICE_PROCESS_SRV`, entity `A_SuplrInvcItemPurOrdRef`, key `5100001001/2026/1`, field `SupplierInvoiceItemAmount`, value `100.00`.
 
 ## Seeded cases the tools must support
 

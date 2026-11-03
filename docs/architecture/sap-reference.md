@@ -191,7 +191,7 @@ How that maps onto this project:
 | Artifact | What it is |
 | --- | --- |
 | `sap.sim` entities | Local CDS that **simulates** the source documents. Names of SAP fields are kept where verified. The namespace is not a delivered SAP view (`I_SupplierInvoice` and similar are real CDS views inside S/4 and are not created here). |
-| `invc` entities | Application-owned investigations, evidence, findings, decisions, and the event inbox. |
+| `invc` entities | Application-owned investigations, decisions, and the event inbox. |
 | `SimulatedS4Service` | Read projections of `sap.sim`, shaped like the OData reads the agent needs. |
 | `InvestigationService` | The workbench API. Projections of `invc`, plus the actions a person can approve. |
 | Agent tool routes | `AgentToolService` at `/agent-tools`. Read-only functions. Each handler queries `sap.sim` through CAP and returns the trimmed JSON in the tool catalog. The advisor calls these functions and does not query the database. |

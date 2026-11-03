@@ -105,17 +105,15 @@ test("pending workbench lists simulated cases and hides retry until a failure", 
 
     const price = rows.find((row) => row.supplierInvoice === "5100001001");
     assert.ok(price);
-    const detail = await fetch(`${base}/workbench/Investigations(${price.ID})?$expand=evidence,poItems`);
+    const detail = await fetch(`${base}/workbench/Investigations(${price.ID})?$expand=poItems`);
     const body = (await detail.json()) as {
       narrative: string;
       priceDifference: string;
       recommendedAction: string;
-      evidence: Array<{ field: string }>;
       poItems: Array<{ PurchaseOrder: string }>;
     };
     assert.match(body.narrative, /5100001001/);
     assert.equal(Number(body.priceDifference), 20);
-    assert.equal(body.evidence.some((item) => item.field === "SupplierInvoiceItemAmount"), true);
     assert.equal(body.poItems.some((item) => item.PurchaseOrder === "4500001001"), true);
 
     const quantity = rows.find((row) => row.supplierInvoice === "5100001002");

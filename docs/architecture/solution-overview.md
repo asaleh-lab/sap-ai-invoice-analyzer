@@ -13,7 +13,7 @@ The workbench:
 1. Accepts the event and ignores duplicates.
 2. Opens one investigation for that invoice and fiscal year.
 3. Calls the advisor module, which chooses read-only tools. The workbench checks the recommendation against a deterministic variance.
-4. Shows the invoice, the evidence, and the recommendation.
+4. Shows the invoice, the variance, and the recommendation.
 5. Performs one approved action: release the logistics payment block, post a subsequent credit for a price difference, save a supplier email draft, or dismiss the case.
 
 Three seeded invoices show three different recommendations: subsequent credit, contact the supplier, and release the block.
@@ -49,7 +49,7 @@ No real Event Mesh broker, no second database, no second process, no retrieval i
 3. The consumer reads the invoice through the simulated supplier invoice API. An empty `PaymentBlockingReason` means the invoice is not blocked. An unknown key is the same outcome. Both reject the inbox row.
 4. When `PaymentBlockingReason` is set, the consumer inserts `invc.Investigations` in status `open` and copies that reason onto the case with the other list fields from the read.
 5. The investigation handler calls the advisor module with the case id, an objective, the invoice key, and the six tool functions. The invoice document is not passed in.
-6. The advisor calls those functions. Each call is logged as evidence when the recommendation is stored.
+6. The advisor calls those functions. The workbench stores the recommendation and the variance figures.
 7. CAP checks the policy in [tool-catalog.md](tool-catalog.md) and sets status `awaiting_review`.
 8. The UI reads `InvestigationService`.
 9. An action updates `sap.sim` only for release and subsequent credit, then writes `invc.Decisions` and, except for the email draft, closes the case.
@@ -64,7 +64,7 @@ The advisor sees the objective, the invoice key, and the tool functions the work
 
 A configured OpenAI-compatible chat model may choose the order. The store step on the workbench still requires the invoice read, the variance result when a purchase-order reference exists, and the action rules. Narrative text is the model's. Amounts are the variance function's.
 
-Findings are `fact`, `assumption`, or `missing`. An assumption includes the project tolerance. A missing goods receipt is missing information, and the quantity difference is the full invoiced quantity only when the unit matches and the receipt list is empty. The recommendation then cannot be a release or a subsequent credit.
+A missing goods receipt is missing information, and the quantity difference is the full invoiced quantity only when the unit matches and the receipt list is empty. The recommendation then cannot be a release or an invoice reduction.
 
 ## Human approval flow
 

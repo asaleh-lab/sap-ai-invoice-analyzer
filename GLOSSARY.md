@@ -42,14 +42,8 @@ _Avoid_: Subsequent credit
 The application-owned case for a supplier invoice whose payment block reason is set. It is not an SAP business object.
 _Avoid_: Invoice, blocked invoice, workflow item, ticket
 
-**Evidence**:
-A stored reference to a value returned by a simulated SAP read, including the API, entity, field, and value that support a finding.
-
-**Finding**:
-A statement the investigation is willing to stand behind, tied to evidence, and marked as a fact, an assumption, or missing information.
-
 **Recommendation**:
-The structured outcome of an investigation: a proposed human action, the variance amounts, and the findings behind it. It does not change SAP data.
+The structured outcome of an investigation: a proposed human action and the variance amounts. It does not change SAP data.
 
 **Human approval**:
 An explicit workbench action by a person. The backend checks it before any simulated SAP write.

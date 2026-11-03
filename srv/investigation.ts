@@ -59,8 +59,6 @@ async function retry(investigationId: string, req: ActionRequest): Promise<void>
       .set({ attemptCount: attempts + 1 })
       .where({ id: inbox.id });
   }
-  await DELETE.from("invc.Findings").where({ investigation_ID: investigationId });
-  await DELETE.from("invc.Evidence").where({ investigation_ID: investigationId });
   await finish(investigationId, text(row.supplierInvoice), text(row.fiscalYear));
   log.info(investigationId, "retried");
 }
@@ -88,26 +86,6 @@ async function finish(investigationId: string, supplierInvoice: string, fiscalYe
       await storeFailure(investigationId, `Recommendation ${action} was refused.`);
       return;
     }
-    await INSERT.into("invc.Findings").entries(
-      advice.findings.map((finding, index) => ({
-        ID: runtime.utils.uuid(),
-        investigation_ID: investigationId,
-        kind: finding.kind,
-        text: finding.text,
-        sortOrder: index,
-      })),
-    );
-    await INSERT.into("invc.Evidence").entries(
-      advice.evidence.map((row) => ({
-        ID: runtime.utils.uuid(),
-        investigation_ID: investigationId,
-        api: row.api,
-        entity: row.entity,
-        objectKey: row.objectKey,
-        field: row.field,
-        value: row.value,
-      })),
-    );
     await UPDATE("invc.Investigations")
       .set({
         status: "awaiting_review",
@@ -126,14 +104,9 @@ async function finish(investigationId: string, supplierInvoice: string, fiscalYe
 }
 
 async function storeFailure(investigationId: string, message: string): Promise<void> {
-  await INSERT.into("invc.Findings").entries({
-    ID: runtime.utils.uuid(),
-    investigation_ID: investigationId,
-    kind: "missing",
-    text: message,
-    sortOrder: 0,
-  });
-  await UPDATE("invc.Investigations").set({ status: "investigation_failed" }).where({ ID: investigationId });
+  await UPDATE("invc.Investigations")
+    .set({ status: "investigation_failed", narrative: message.slice(0, 2000) })
+    .where({ ID: investigationId });
 }
 
 async function readTolerance(investigationId: string): Promise<number> {

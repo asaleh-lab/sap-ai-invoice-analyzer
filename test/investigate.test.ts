@@ -30,7 +30,6 @@ test("scripted price case calls the invoice, order, receipts, and variance tools
     ]);
     assert.equal(network.length, 0);
     assert.match(advice.narrative, /unchanged/);
-    assert.equal(advice.findings.some((finding) => finding.kind === "assumption" && finding.text.includes("0.50")), true);
   } finally {
     globalThis.fetch = original;
     if (previous == null) delete process.env.LLM_API_KEY;
