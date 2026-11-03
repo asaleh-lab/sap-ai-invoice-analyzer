@@ -1,6 +1,6 @@
 # TICKET-008: History and dashboard
 
-**Status:** ready-for-agent
+**Status:** done
 
 **Commit:** Finish this ticket, then commit its code-relevant files before the next ticket. One ticket, one commit. See `AGENTS.md`.
 
@@ -48,11 +48,11 @@ Summary function, Fiori elements history list, tests for counts after the three 
 
 ## Acceptance criteria
 
-- [ ] After release, subsequent credit, and dismiss on the three seeded cases, pending count is `0` and processed count is `3`.
-- [ ] Outcome counts are one release, one subsequent credit, and one dismiss.
-- [ ] History shows the three invoice references and does not show an open case.
-- [ ] If only the price case is closed, pending count is `2` and Helios Fasteners is listed with pending count `2`.
-- [ ] A contact draft alone does not reduce the pending count.
+- [x] After release, subsequent credit, and dismiss on the three seeded cases, pending count is `0` and processed count is `3`.
+- [x] Outcome counts are one release, one subsequent credit, and one dismiss.
+- [x] History shows the three invoice references and does not show an open case.
+- [x] If only the price case is closed, pending count is `2` and Helios Fasteners is listed with pending count `2`.
+- [x] A contact draft alone does not reduce the pending count.
 
 ## Test cases
 

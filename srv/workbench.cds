@@ -27,6 +27,23 @@ service InvestigationService @(path: '/workbench') {
   action postSubsequentCredit(investigationId: UUID, actor: String) returns Decision;
   action prepareSupplierContact(investigationId: UUID, actor: String) returns Decision;
   action dismissInvestigation(investigationId: UUID, actor: String, reason: String) returns Decision;
+  function workbenchSummary() returns WorkbenchSummary;
+
+  type SupplierPending {
+    supplierName : String(81);
+    pendingCount : Integer;
+    highlighted : Boolean;
+  }
+
+  type WorkbenchSummary {
+    pending : Integer;
+    closed : Integer;
+    released : Integer;
+    subsequentCreditPosted : Integer;
+    dismissed : Integer;
+    contactDrafts : Integer;
+    suppliers : many SupplierPending;
+  }
 
   type Decision {
     ID : UUID;

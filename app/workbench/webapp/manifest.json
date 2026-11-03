@@ -75,6 +75,18 @@
                   "detail": { "route": "InvestigationsObjectPage" }
                 }
               },
+              "views": {
+                "paths": [
+                  {
+                    "key": "pending",
+                    "annotationPath": "com.sap.vocabularies.UI.v1.SelectionPresentationVariant"
+                  },
+                  {
+                    "key": "history",
+                    "annotationPath": "com.sap.vocabularies.UI.v1.SelectionPresentationVariant#History"
+                  }
+                ]
+              },
               "content": {
                 "header": {
                   "actions": {

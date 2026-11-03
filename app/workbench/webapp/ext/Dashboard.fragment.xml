@@ -1,0 +1,14 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+  <VBox id="workbenchSummary" class="sapUiSmallMargin">
+    <Text text="Pending {summary>/pending}" />
+    <Text text="Processed {summary>/closed}" />
+    <Text text="Released {summary>/released}" />
+    <Text text="Subsequent credit posted {summary>/subsequentCreditPosted}" />
+    <Text text="Dismissed {summary>/dismissed}" />
+    <List items="{summary>/suppliers}">
+      <CustomListItem highlight="{= ${summary>highlighted} ? 'Information' : 'None' }">
+        <Text text="{summary>supplierName} {summary>pendingCount}" />
+      </CustomListItem>
+    </List>
+  </VBox>
+</core:FragmentDefinition>

@@ -21,6 +21,21 @@ annotate InvestigationService.Investigations with @(
       Visualizations: ['@UI.LineItem'],
     },
   },
+  UI.SelectionPresentationVariant #History: {
+    Text: 'Processed',
+    SelectionVariant: {
+      SelectOptions: [{
+        PropertyName: status,
+        Ranges: [
+          { Sign: #I, Option: #EQ, Low: 'closed' },
+        ],
+      }],
+    },
+    PresentationVariant: {
+      SortOrder: [{ Property: closedAt, Descending: true }],
+      Visualizations: ['@UI.LineItem#History'],
+    },
+  },
   UI.HeaderInfo: {
     TypeName: 'Investigation',
     TypeNamePlural: 'Pending investigations',
@@ -36,6 +51,14 @@ annotate InvestigationService.Investigations with @(
     { Value: paymentBlockingReason, Label: 'Payment block reason' },
     { Value: blockCategory, Label: 'Calculated block category' },
     { Value: status, Label: 'Status' },
+  ],
+  UI.LineItem #History: [
+    { Value: supplierName, Label: 'Supplier' },
+    { Value: supplierInvoiceIdByInvoicingParty, Label: 'Supplier invoice reference' },
+    { Value: invoiceGrossAmount, Label: 'Gross amount' },
+    { Value: documentCurrency, Label: 'Currency' },
+    { Value: outcome, Label: 'Outcome' },
+    { Value: closedAt, Label: 'Closed' },
   ],
   UI.FieldGroup #Header: {
     Label: 'Invoice header',

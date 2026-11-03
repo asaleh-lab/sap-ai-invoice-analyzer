@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { outcomeLabels } from "../srv/outcome-labels.ts";
 import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -8,6 +9,20 @@ import test from "node:test";
 const port = "4018";
 const base = `http://127.0.0.1:${port}`;
 const pending = ["awaiting_review", "open", "investigating", "investigation_failed"];
+
+test("outcome labels follow a mocked summary", () => {
+  const labels = outcomeLabels({ released: 1, subsequentCreditPosted: 1, dismissed: 1 });
+  assert.deepEqual(
+    labels.map((row) => row.label),
+    ["Released", "Subsequent credit posted", "Dismissed"],
+  );
+  assert.deepEqual(
+    labels.map((row) => row.count),
+    [1, 1, 1],
+  );
+  const fragment = readFileSync("app/workbench/webapp/ext/Dashboard.fragment.xml", "utf8");
+  for (const row of labels) assert.match(fragment, new RegExp(row.label));
+});
 
 test("pending workbench lists simulated cases and hides retry until a failure", async () => {
   const dbFile = path.join(mkdtempSync(path.join(tmpdir(), "invoice-ui-")), "db.sqlite");
@@ -31,6 +46,11 @@ test("pending workbench lists simulated cases and hides retry until a failure", 
     const manifest = await (await fetch(`${base}/workbench-ui/manifest.json`)).json();
     const list = manifest["sap.ui5"].routing.targets.InvestigationsList.options.settings;
     assert.match(list.content.table.noData.text, /Send sample events/);
+    const views = list.views.paths.map((view: { key: string; annotationPath: string }) => view.annotationPath);
+    assert.deepEqual(views, [
+      "com.sap.vocabularies.UI.v1.SelectionPresentationVariant",
+      "com.sap.vocabularies.UI.v1.SelectionPresentationVariant#History",
+    ]);
     assert.equal(list.content.header.actions.retryInvestigation, undefined);
     const objectPage = manifest["sap.ui5"].routing.targets.InvestigationsObjectPage.options.settings;
     assert.equal(objectPage.content.header.actions.retryInvestigation.visible, "{= %{status} === 'investigation_failed' }");
