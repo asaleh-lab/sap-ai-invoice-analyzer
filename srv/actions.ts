@@ -87,7 +87,7 @@ async function credit(req: ActionRequest): Promise<Row> {
   const allowed = allowedActions(numbers(variance), Number.isFinite(tolerance) ? tolerance : 0.5);
   if (text(row.recommendedAction) !== "post_subsequent_credit" || !allowed.includes("post_subsequent_credit")) {
     await restore(text(row.ID));
-    req.reject(409, "A subsequent credit is not allowed for this invoice.");
+    req.reject(409, "An invoice reduction is not allowed for this invoice.");
   }
   const invoice = await loadInvoice(text(row.supplierInvoice), text(row.fiscalYear));
   const item = list(invoice?.items)[0];

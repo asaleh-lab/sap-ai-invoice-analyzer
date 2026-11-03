@@ -14,7 +14,7 @@ test("outcome labels follow a mocked summary", () => {
   const labels = outcomeLabels({ released: 1, subsequentCreditPosted: 1, dismissed: 1 });
   assert.deepEqual(
     labels.map((row) => row.label),
-    ["Released", "Subsequent credit posted", "Dismissed"],
+    ["Released", "Invoice reduction posted", "Dismissed"],
   );
   assert.deepEqual(
     labels.map((row) => row.count),

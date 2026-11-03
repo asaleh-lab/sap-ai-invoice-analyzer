@@ -4,7 +4,7 @@ export function outcomeLabels(summary: { released: number; subsequentCreditPoste
 }> {
   return [
     { label: "Released", count: summary.released },
-    { label: "Subsequent credit posted", count: summary.subsequentCreditPosted },
+    { label: "Invoice reduction posted", count: summary.subsequentCreditPosted },
     { label: "Dismissed", count: summary.dismissed },
   ];
 }
