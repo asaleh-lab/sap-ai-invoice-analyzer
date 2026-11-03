@@ -51,17 +51,4 @@ The four service schemas are in `metadata/`, taken from the public sandbox `$met
 
 There is no payment run and no Finance-only payment block. The tolerance of 0.50 EUR is ours, not SAP invoice-verification customizing. Contacting the supplier stores a draft and does not send it. The dashboard is a later ticket, and the demo does not need it.
 
-The workbench opens in the local Fiori sandbox at `http://localhost:4004/workbench-ui`. The browser console on startup is noisy, and these messages are not failed invoice actions:
-
-- `Device API logging initialized` is an SAPUI5 information log.
-- `Permissions policy violation: unload` comes from UI5 `ResizeHandler` inside the browser. The page still loads.
-- `404` for two JSON files during `sandbox.js` `applyJsonApplicationConfig`. The launchpad sandbox looks for optional config files this demo does not ship.
-- `404` for `workbench/Component-preload.js`. There is no UI5 preload build. The app then loads the individual modules.
-- `404` for `/sap/bc/lrep/flex/data/workbench` and `/sap/bc/lrep/flex/settings`. There is no ABAP flexibility service. UI5 logs that startup continues without that storage. `flexEnabled` is already false.
-- `404` for `ESH_SEARCH_SRV` and `/sap/es/ina/GetServerInfo`. Enterprise search is not part of this demo. The sandbox hides the search field, and the shell still asks.
-- `Fcl.controller` `setProperty` of undefined can throw once while the flexible column layout starts. If the detail stays blank, open `http://localhost:4004/workbench-ui` again so the address has no old investigation key.
-- `Cache Manager` / `DataCloneError` while writing the list view into IndexedDB. UI5 cannot clone a binding function. The list still comes from OData.
-
-Send sample events posts the same three CloudEvent ids every time. A second click is a duplicate and does not add rows. The pending list hides cases whose status is `closed`.
-
 The design record is in [docs/adr](docs/adr) and the vocabulary is in [GLOSSARY.md](GLOSSARY.md).
