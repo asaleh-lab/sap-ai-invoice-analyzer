@@ -65,7 +65,6 @@
             rows="{summary>/suppliers}"
             selectionMode="None"
             alternateRowColors="true"
-            height="100%"
             ariaLabelledBy="supplierGridTitle"
             noData="No suppliers have pending cases."
             rowsUpdated=".onSupplierRowsUpdated"
@@ -104,8 +103,7 @@
                 <PagingButton
                   position="{summary>/supplierPage}"
                   count="{summary>/supplierPages}"
-                  previousButtonPress=".onSupplierPagePrevious"
-                  nextButtonPress=".onSupplierPageNext"
+                  positionChange=".onSupplierPageChange"
                 />
               </OverflowToolbar>
             </t:footer>

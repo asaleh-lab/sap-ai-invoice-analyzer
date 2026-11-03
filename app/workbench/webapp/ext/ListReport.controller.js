@@ -126,16 +126,16 @@ sap.ui.define(["sap/m/FlexItemData", "sap/ui/core/Fragment", "sap/ui/model/json/
       if (!table || !dom || !body || !body.getVisible()) return;
       const bottomGap = 16;
       const height = Math.max(window.innerHeight - dom.getBoundingClientRect().top - bottomGap, 280);
-      if (table.getHeight() !== height + "px") table.setHeight(height + "px");
+      dom.style.height = height + "px";
     },
     onSupplierRowsUpdated: function () {
       this._syncSupplierPager();
     },
-    onSupplierPagePrevious: function () {
-      this._moveSupplierPage(-1);
-    },
-    onSupplierPageNext: function () {
-      this._moveSupplierPage(1);
+    onSupplierPageChange: function (event) {
+      const next = event.getParameter("newPosition");
+      const previous = event.getParameter("oldPosition");
+      if (next === previous) return;
+      this._moveSupplierPage(next > previous ? 1 : -1);
     },
     _moveSupplierPage: function (direction) {
       const table = this.byId("supplierGrid");
