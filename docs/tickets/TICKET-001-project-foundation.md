@@ -1,8 +1,8 @@
 # TICKET-001: Project foundation
 
-**Status:** ready-for-agent
+**Status:** done
 
-**Commit:** Finish this ticket, then commit its code-relevant files before the next ticket. One ticket, one commit. See `AGENTS.md`.
+**Commit:** `6c0e4cb` — Stand up an empty TypeScript CAP app so later tickets have a running process.
 
 | | |
 | --- | --- |
@@ -54,11 +54,11 @@ None. Local CAP SQLite guide: https://cap.cloud.sap/docs/guides/databases/sqlite
 
 ## Acceptance criteria
 
-- [ ] `npm install` and `npx cds watch` start the CAP app and `GET /health` returns `mode` `simulated-s4`.
-- [ ] Importing `investigate` from `advisor/` and calling it throws the not-implemented error.
-- [ ] `advisor/` does not import `@sap/cds`.
-- [ ] `docker compose up --build` brings up the app, and `GET` on the health URL succeeds without an SAP credential.
-- [ ] `.env` is gitignored. `.env.example` contains empty `LLM_API_KEY`.
+- [x] `npm install` and `npx cds watch` start the CAP app and `GET /health` returns `mode` `simulated-s4`.
+- [x] `advisor/` exports `investigate` with `caseId`, `objective`, `input` (`SupplierInvoice`, `FiscalYear`), and `tools`. Ticket 005 replaced the not-implemented stub with the real advisor.
+- [x] `advisor/` does not import `@sap/cds`.
+- [x] `docker compose up --build` brings up the app, and `GET` on the health URL succeeds without an SAP credential.
+- [x] `.env` is gitignored. `.env.example` contains empty `LLM_API_KEY`.
 
 ## Test cases
 
