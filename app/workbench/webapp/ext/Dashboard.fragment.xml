@@ -1,4 +1,4 @@
-<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:t="sap.ui.table" xmlns:rowmodes="sap.ui.table.rowmodes">
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:t="sap.ui.table">
   <VBox>
     <SegmentedButton id="workbenchTabs" selectedKey="dashboard" selectionChange=".onWorkbenchTab" class="sapUiSmallMarginBottom">
       <items>
@@ -56,7 +56,7 @@
             </GenericTile>
           </VBox>
         </Panel>
-        <VBox class="workbenchSupplierPanel">
+        <VBox class="workbenchSupplierPanel" renderType="Div">
           <layoutData>
             <FlexItemData growFactor="1" baseSize="0%" />
           </layoutData>
@@ -68,15 +68,13 @@
             ariaLabelledBy="supplierGridTitle"
             noData="No suppliers have pending cases."
             rowsUpdated=".onSupplierRowsUpdated"
+            visibleRowCount="10"
           >
             <t:extension>
               <OverflowToolbar>
                 <Title id="supplierGridTitle" text="Suppliers with pending cases" />
               </OverflowToolbar>
             </t:extension>
-            <t:rowMode>
-              <rowmodes:Auto minRowCount="3" />
-            </t:rowMode>
             <t:columns>
               <t:Column sortProperty="supplierName" width="14rem">
                 <Label text="Supplier" />

@@ -35,6 +35,7 @@ sap.ui.define(["sap/m/FlexItemData", "sap/ui/core/Fragment", "sap/ui/model/json/
         );
         this.refreshSummary();
         this.onWorkbenchTab({ getParameter: () => "dashboard" });
+        this._hookSupplierGrid();
         this._onWorkbenchResize = () => this._sizeSupplierGrid();
         window.addEventListener("resize", this._onWorkbenchResize);
         setTimeout(() => this._prepareCaseTable(), 300);
@@ -119,14 +120,33 @@ sap.ui.define(["sap/m/FlexItemData", "sap/ui/core/Fragment", "sap/ui/model/json/
       model.setData(summary);
       setTimeout(() => this._syncSupplierPager(), 0);
     },
+    _hookSupplierGrid: function () {
+      const table = this.byId("supplierGrid");
+      if (!table || table._workbenchSizeHook) return;
+      table._workbenchSizeHook = true;
+      const render = table.onAfterRendering;
+      const controller = this;
+      table.onAfterRendering = function () {
+        if (render) render.apply(this, arguments);
+        controller._sizeSupplierGrid();
+      };
+    },
     _sizeSupplierGrid: function () {
       const table = this.byId("supplierGrid");
       const body = this.byId("dashboardBody");
       const dom = table && table.getDomRef && table.getDomRef();
-      if (!table || !dom || !body || !body.getVisible()) return;
-      const bottomGap = 16;
-      const height = Math.max(window.innerHeight - dom.getBoundingClientRect().top - bottomGap, 280);
-      dom.style.height = height + "px";
+      if (!table || !dom || !body || !body.getVisible() || this._sizingSupplierGrid) return;
+      const chrome =
+        (dom.querySelector(".sapUiTableExt") || { offsetHeight: 0 }).offsetHeight +
+        (dom.querySelector(".sapUiTableColHdrCnt") || { offsetHeight: 0 }).offsetHeight +
+        (dom.querySelector(".sapUiTableFtr") || { offsetHeight: 0 }).offsetHeight;
+      const rowHeight = table._getBaseRowHeight ? table._getBaseRowHeight() : table.getRowHeight() || 33;
+      const available = window.innerHeight - dom.getBoundingClientRect().top - 16;
+      const rows = Math.max(Math.floor((available - chrome) / rowHeight), 3);
+      if (table.getVisibleRowCount() === rows) return;
+      this._sizingSupplierGrid = true;
+      table.setVisibleRowCount(rows);
+      this._sizingSupplierGrid = false;
     },
     onSupplierRowsUpdated: function () {
       this._syncSupplierPager();

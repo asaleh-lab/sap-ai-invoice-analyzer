@@ -27,8 +27,14 @@
   flex: 1 1 auto;
   min-width: 18rem;
   min-height: 16rem;
-  height: 100%;
   align-self: stretch;
+  display: flex;
+  flex-direction: column;
+}
+
+.workbenchSupplierPanel .sapUiTable {
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .workbenchPanel {
