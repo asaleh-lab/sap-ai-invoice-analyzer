@@ -107,27 +107,28 @@
                     "retryInvestigation": {
                       "press": "workbench.ext.ObjectPage.retryInvestigation",
                       "text": "Retry",
-                      "visible": "{= ${status} === 'investigation_failed' }"
+                      "visible": "{= %{status} === 'investigation_failed' }",
+                      "enabled": "{= %{status} === 'investigation_failed' }"
                     },
                     "releasePaymentBlock": {
                       "press": "workbench.ext.ObjectPage.releasePaymentBlock",
                       "text": "Release payment block",
-                      "enabled": "{= ${status} === 'awaiting_review' && ${recommendedAction} === 'release_payment_block' }"
+                      "enabled": "{= %{status} === 'awaiting_review' && %{recommendedAction} === 'release_payment_block' }"
                     },
                     "postSubsequentCredit": {
                       "press": "workbench.ext.ObjectPage.postSubsequentCredit",
                       "text": "Post subsequent credit",
-                      "enabled": "{= ${status} === 'awaiting_review' && ${recommendedAction} === 'post_subsequent_credit' }"
+                      "enabled": "{= %{status} === 'awaiting_review' && %{recommendedAction} === 'post_subsequent_credit' }"
                     },
                     "prepareSupplierContact": {
                       "press": "workbench.ext.ObjectPage.prepareSupplierContact",
                       "text": "Prepare supplier contact",
-                      "enabled": "{= ${status} === 'awaiting_review' && (${recommendedAction} === 'contact_supplier' || ${invoicingParty} !== '') }"
+                      "enabled": "{= %{status} === 'awaiting_review' && (%{recommendedAction} === 'contact_supplier' || %{invoicingParty} !== '') }"
                     },
                     "dismissInvestigation": {
                       "press": "workbench.ext.ObjectPage.dismissInvestigation",
                       "text": "Dismiss",
-                      "enabled": "{= ${status} === 'awaiting_review' }"
+                      "enabled": "{= %{status} === 'awaiting_review' }"
                     }
                   }
                 }

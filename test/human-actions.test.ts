@@ -87,7 +87,7 @@ test("approved actions write only what the reviewer confirmed", async () => {
     const tools = await fetch(`${base}/agent-tools/$metadata`);
     const metadata = await tools.text();
     assert.doesNotMatch(metadata, /releasePaymentBlock|postSubsequentCredit|ActionImport/);
-    const page = await fetch(`${base}/workbench-ui/ext/ObjectPage.controller.js`);
+    const page = await fetch(`${base}/workbench-ui/ext/ObjectPage.js`);
     const source = await page.text();
     assert.match(source, /original invoice was not modified and remains blocked/);
     assert.match(source, /demo document number/);

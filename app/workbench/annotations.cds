@@ -77,7 +77,7 @@ annotate InvestigationService.Investigations with {
   priceDifference @Measures.ISOCurrency: documentCurrency;
 };
 
-annotate InvestigationService.Investigations:poItems with @(
+annotate InvestigationService.SupplierInvoicePoItems with @(
   UI.LineItem: [
     { Value: PurchaseOrder, Label: 'Purchase order' },
     { Value: PurchaseOrderItem, Label: 'Purchase order item' },
@@ -87,25 +87,13 @@ annotate InvestigationService.Investigations:poItems with @(
   ],
 );
 
-annotate InvestigationService.Investigations:factFindings with @(
+annotate InvestigationService.Findings with @(
   UI.LineItem: [
-    { Value: text, Label: 'Fact' },
+    { Value: text, Label: 'Text' },
   ],
 );
 
-annotate InvestigationService.Investigations:assumptionFindings with @(
-  UI.LineItem: [
-    { Value: text, Label: 'Assumption' },
-  ],
-);
-
-annotate InvestigationService.Investigations:missingFindings with @(
-  UI.LineItem: [
-    { Value: text, Label: 'Missing or error' },
-  ],
-);
-
-annotate InvestigationService.Investigations:evidence with @(
+annotate InvestigationService.Evidence with @(
   UI.LineItem: [
     { Value: api, Label: 'API' },
     { Value: entity, Label: 'Entity' },

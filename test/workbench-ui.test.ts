@@ -33,7 +33,8 @@ test("pending workbench lists simulated cases and hides retry until a failure", 
     assert.match(list.content.table.noData.text, /Send sample events/);
     assert.equal(list.content.header.actions.retryInvestigation, undefined);
     const objectPage = manifest["sap.ui5"].routing.targets.InvestigationsObjectPage.options.settings;
-    assert.equal(objectPage.content.header.actions.retryInvestigation.visible, "{= ${status} === 'investigation_failed' }");
+    assert.equal(objectPage.content.header.actions.retryInvestigation.visible, "{= %{status} === 'investigation_failed' }");
+    assert.equal(objectPage.content.header.actions.retryInvestigation.enabled, "{= %{status} === 'investigation_failed' }");
 
     const empty = await listPending();
     assert.equal(empty.length, 0);

@@ -1,4 +1,4 @@
-sap.ui.define(["sap/ui/core/mvc/ControllerExtension", "sap/m/MessageBox"], function (ControllerExtension, MessageBox) {
+sap.ui.define(["sap/m/MessageBox", "sap/m/Dialog", "sap/m/Button", "sap/m/TextArea"], function (MessageBox, Dialog, Button, TextArea) {
   "use strict";
   const creditText =
     "A new subsequent credit was posted. The original invoice was not modified and remains blocked. IsSubsequentDebitCredit is X. The document number is a demo document number, not an SAP number range.";
@@ -16,21 +16,27 @@ sap.ui.define(["sap/ui/core/mvc/ControllerExtension", "sap/m/MessageBox"], funct
       MessageBox.error((body.error && body.error.message) || "The action was rejected.");
       return null;
     }
-    await context.requestSideEffects(["*"]);
+    await context.requestSideEffects(["status", "paymentBlockingReason", "outcome", "closedAt"]);
     return response.json();
   }
 
-  return ControllerExtension.extend("workbench.ext.ObjectPage", {
-    releasePaymentBlock: async function () {
-      const context = this.getView().getBindingContext();
+  function caseContext(value) {
+    if (value && value.getProperty) return value;
+    const source = value && value.getSource && value.getSource();
+    return source && source.getBindingContext ? source.getBindingContext() : null;
+  }
+
+  return {
+    releasePaymentBlock: async function (context) {
+      context = caseContext(context);
       if (!context || context.getProperty("recommendedAction") !== "release_payment_block") return;
       await postAction(context, "releasePaymentBlock", {
         investigationId: context.getProperty("ID"),
         actor: "local.reviewer",
       });
     },
-    postSubsequentCredit: async function () {
-      const context = this.getView().getBindingContext();
+    postSubsequentCredit: async function (context) {
+      context = caseContext(context);
       if (!context || context.getProperty("recommendedAction") !== "post_subsequent_credit") return;
       const posted = await postAction(context, "postSubsequentCredit", {
         investigationId: context.getProperty("ID"),
@@ -38,8 +44,8 @@ sap.ui.define(["sap/ui/core/mvc/ControllerExtension", "sap/m/MessageBox"], funct
       });
       if (posted) MessageBox.information(creditText);
     },
-    prepareSupplierContact: async function () {
-      const context = this.getView().getBindingContext();
+    prepareSupplierContact: async function (context) {
+      context = caseContext(context);
       if (!context || context.getProperty("status") !== "awaiting_review") return;
       const draft = await postAction(context, "prepareSupplierContact", {
         investigationId: context.getProperty("ID"),
@@ -47,27 +53,45 @@ sap.ui.define(["sap/ui/core/mvc/ControllerExtension", "sap/m/MessageBox"], funct
       });
       if (draft) MessageBox.information("Draft to " + draft.emailDraftTo + " was stored and was not sent.\n\n" + draft.emailDraftBody);
     },
-    dismissInvestigation: async function () {
-      const context = this.getView().getBindingContext();
+    dismissInvestigation: async function (context) {
+      context = caseContext(context);
       if (!context || context.getProperty("status") !== "awaiting_review") return;
-      MessageBox.prompt("Why are you dismissing this case?", {
+      const reason = new TextArea({ width: "100%", rows: 4, placeholder: "Why are you dismissing this case?" });
+      const dialog = new Dialog({
         title: "Dismiss",
-        onClose: async function (action, value) {
-          if (action !== MessageBox.Action.OK) return;
-          if (!value || !value.trim()) {
-            MessageBox.error("A dismiss reason is required.");
-            return;
-          }
-          await postAction(context, "dismissInvestigation", {
-            investigationId: context.getProperty("ID"),
-            actor: "local.reviewer",
-            reason: value.trim(),
-          });
+        contentWidth: "24rem",
+        content: reason,
+        beginButton: new Button({
+          text: "OK",
+          type: "Emphasized",
+          press: async function () {
+            const value = reason.getValue().trim();
+            if (!value) {
+              MessageBox.error("A dismiss reason is required.");
+              return;
+            }
+            dialog.close();
+            await postAction(context, "dismissInvestigation", {
+              investigationId: context.getProperty("ID"),
+              actor: "local.reviewer",
+              reason: value,
+            });
+          },
+        }),
+        endButton: new Button({
+          text: "Cancel",
+          press: function () {
+            dialog.close();
+          },
+        }),
+        afterClose: function () {
+          dialog.destroy();
         },
       });
+      dialog.open();
     },
-    retryInvestigation: async function () {
-      const context = this.getView().getBindingContext();
+    retryInvestigation: async function (context) {
+      context = caseContext(context);
       const id = context && context.getProperty("ID");
       if (!id || context.getProperty("status") !== "investigation_failed") return;
       await fetch("/workbench/retryInvestigation", {
@@ -75,7 +99,7 @@ sap.ui.define(["sap/ui/core/mvc/ControllerExtension", "sap/m/MessageBox"], funct
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ ID: id }),
       });
-      await context.requestSideEffects(["*"]);
+      await context.requestSideEffects(["status", "paymentBlockingReason", "outcome", "closedAt"]);
     },
-  });
+  };
 });
