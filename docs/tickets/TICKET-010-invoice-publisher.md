@@ -39,6 +39,9 @@ Changing event types, release, subsequent credit, dismiss, a chart of the top te
 
 - Document inserts go through the same simulated entities the read tools already use. Do not add a second invoice store.
 - The CloudEvent payload carries only the invoice key and fiscal year, as in [event-contracts.md](../architecture/event-contracts.md).
+- Every event this ticket posts is valid, envelope and data. `specversion`, `type`, `id`, `source`, and `data.SupplierInvoice` / `data.FiscalYear` are present and consistent. The invoice named in the event is already stored, with its purchase order and goods receipt, before the POST. The inbox never stores `invalid` or `rejected` because the invoice key is missing or the documents do not line up. A reviewer who opens a case from a publisher click sees a complete invoice, not a data error.
+- The only publisher outcome that does not open a case is the unblocked template: the event and the documents are still valid, `PaymentBlockingReason` is empty, the inbox is `rejected`, and no investigation opens.
+- Do not add a retry for bad event data. The workbench Retry button stays only for processing failures (`failed` / `investigation_failed`), which are not caused by the payload or the documents.
 - New invoice numbers must not collide with seeded ids or with each other in one SQLite file.
 - A second publisher action that would reuse an open invoice follows the ticket 004 duplicate rule and does not insert a second investigation.
 - The unblocked template leaves the inbox `rejected` and creates no investigation.
@@ -64,6 +67,8 @@ Publisher UI, template module, expanded CSV seed, tests that one click per templ
 - [ ] Choosing the unblocked template creates an invoice with an empty `PaymentBlockingReason`. The inbox row is `rejected`. No investigation opens.
 - [ ] Repeating the post for an invoice that already has an open case does not add a second investigation.
 - [ ] The publisher screen shows the new invoice id and a way to open the workbench. It does not offer release, subsequent credit, or dismiss.
+- [ ] Each publisher action stores the invoice, purchase order, and goods receipt first, then posts one valid event for that key. The inbox status is `processed`, `duplicate_open_case`, or `rejected` only for an empty payment block. It is never `invalid`, and never `rejected` because the invoice is missing.
+- [ ] The publisher does not offer retry. Workbench Retry remains only for a case that failed while processing, not for invalid or rejected event data.
 
 ## Test cases
 

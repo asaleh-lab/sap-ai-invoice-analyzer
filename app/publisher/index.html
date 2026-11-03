@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Simulated S/4HANA Cloud documents</title>
+  </head>
+  <body>
+    <h1>Simulated S/4HANA Cloud documents</h1>
+    <p>Each button files a purchase order, a goods receipt, and a supplier invoice, then posts one created event.</p>
+    <button type="button" data-template="price">Price variance</button>
+    <button type="button" data-template="quantity">Quantity variance</button>
+    <button type="button" data-template="matching">Matching documents with a payment block</button>
+    <button type="button" data-template="unblocked">Created event with no payment block</button>
+    <section id="result" hidden>
+      <p id="scenario"></p>
+      <p>Invoice <span id="invoice"></span> / <span id="year"></span></p>
+      <p id="case"></p>
+      <p><a href="/workbench-ui">Open the workbench</a></p>
+    </section>
+    <script>
+      for (const button of document.querySelectorAll("button[data-template]")) {
+        button.addEventListener("click", async () => {
+          const response = await fetch("/publisher/invoices", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ template: button.getAttribute("data-template") }),
+          });
+          const body = await response.json();
+          document.getElementById("result").hidden = false;
+          document.getElementById("scenario").textContent = body.scenario;
+          document.getElementById("invoice").textContent = body.supplierInvoice;
+          document.getElementById("year").textContent = body.fiscalYear;
+          document.getElementById("case").textContent = body.caseOpened ? "A case was opened." : "No case was opened.";
+        });
+      }
+    </script>
+  </body>
+</html>

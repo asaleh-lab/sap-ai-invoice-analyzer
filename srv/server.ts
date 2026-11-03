@@ -3,6 +3,7 @@ import { createReadStream, existsSync, statSync } from "node:fs";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import path from "node:path";
 import { registerSimulatedEvents, resumeReceivedRows } from "./events.ts";
+import { registerPublisher } from "./publisher.ts";
 import { registerHumanActions } from "./actions.ts";
 import { registerRetry } from "./investigation.ts";
 import { registerWorkbenchSummary } from "./summary.ts";
@@ -30,7 +31,21 @@ cds.on("bootstrap", (app) => {
       res.end();
     });
   });
-  registerSimulatedEvents(app as unknown as { post(path: string, handler: (req: IncomingMessage, res: ServerResponse) => void): void });
+  app.get("/publisher", (_req, res) => {
+    res.type("html");
+    createReadStream(path.resolve("app/publisher/index.html"))
+      .on("data", (chunk: string | Buffer) => {
+        res.write(chunk);
+      })
+      .on("end", () => {
+        res.end();
+      });
+  });
+  const routes = app as unknown as {
+    post(path: string, handler: (req: IncomingMessage, res: ServerResponse) => void): void;
+  };
+  registerSimulatedEvents(routes);
+  registerPublisher(routes);
   registerRetry();
   registerHumanActions();
   registerWorkbenchSummary();
