@@ -78,3 +78,5 @@ The workbench is visible. The financial action is still a later ticket, so this 
 ## Risks
 
 The list report and the CAP service must share one URL in Compose (`http://localhost:4004`). Test the list at `http://localhost:4004/workbench-ui` (sandbox). Production would use Fiori launchpad registration, not `flpSandbox.html`.
+
+The sandbox console on startup reports 404s for `Component-preload.js`, the launchpad config JSON, `/sap/bc/lrep/flex/*`, and enterprise search (`ESH_SEARCH_SRV`, `GetServerInfo`). Those services are not hosted here. UI5 also logs a `ResizeHandler` unload permissions warning, a one-time `Fcl.controller` `setProperty` error, and an IndexedDB `DataCloneError` from the view cache. None of these are the invoice actions. A second press of Send sample events is a duplicate CloudEvent and does not add rows. The same notes are in the README limits.
