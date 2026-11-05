@@ -45,6 +45,8 @@ entity PurchaseOrderItems {
   key header : Association to PurchaseOrders;
   key PurchaseOrderItem : String(5);
   Material : String(40);
+  MaterialName : String(80);
+  EssentialMaterial : Boolean;
   OrderQuantity : Decimal(13, 3);
   PurchaseOrderQuantityUnit : String(3);
   NetPriceAmount : Decimal(12, 3);
@@ -84,6 +86,7 @@ entity BusinessPartnerEmails {
   key partner : Association to BusinessPartners;
   key AddressID : String(10);
   key Person : String(10);
+  ContactName : String(80);
   key OrdinalNumber : String(3);
   EmailAddress : String(241);
 }

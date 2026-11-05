@@ -61,7 +61,16 @@ entity Investigations {
   outcome : RecommendedAction;
   closedAt : Timestamp;
   decisions : Composition of many Decisions on decisions.investigation = $self;
+  messages : Composition of many Messages on messages.investigation = $self;
   events : Association to many EventInbox on events.investigation = $self;
+}
+
+entity Messages {
+  key ID : UUID;
+  investigation : Association to Investigations;
+  role : String(16);
+  text : String(4000);
+  askedAt : Timestamp;
 }
 
 entity Decisions {

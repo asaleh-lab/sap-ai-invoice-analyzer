@@ -5,6 +5,7 @@ type AdvisorFile = {
   model?: string;
   baseUrl?: string;
   tolerance?: number | string;
+  reviewerName?: string;
 };
 
 export type AdvisorSettings = {
@@ -12,6 +13,7 @@ export type AdvisorSettings = {
   model: string;
   baseUrl: string;
   tolerance: number;
+  reviewerName: string;
 };
 
 export function advisorSettings(): AdvisorSettings {
@@ -22,6 +24,7 @@ export function advisorSettings(): AdvisorSettings {
     model: text(live("CDS_invoiceAdvisor_model"), file.model, "gpt-4o-mini"),
     baseUrl: text(live("CDS_invoiceAdvisor_baseUrl"), file.baseUrl, "https://api.openai.com/v1"),
     tolerance: Number.isFinite(tolerance) ? tolerance : 0.5,
+    reviewerName: text(live("CDS_invoiceAdvisor_reviewerName"), file.reviewerName, "John Doe"),
   };
 }
 

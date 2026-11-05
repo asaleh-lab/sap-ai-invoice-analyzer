@@ -38,6 +38,7 @@ export default class AgentToolService extends api.ApplicationService {
     this.on("getSupplierInvoiceHistory", (req) => readInvoiceHistory(req));
     this.on("getSupplierBusinessPartner", (req) => readBusinessPartner(req));
     this.on("calculateInvoiceVariance", (req) => readVariance(req));
+    this.on("sendEmail", (req) => sendEmail(req));
     await super.init();
   }
 }
@@ -107,9 +108,25 @@ async function readBusinessPartner(req: ToolRequest): Promise<string | void> {
       ? {
           AddressID: text(email.AddressID),
           Person: text(email.Person),
+          ContactName: text(email.ContactName),
           OrdinalNumber: text(email.OrdinalNumber),
+          EmailAddress: text(email.EmailAddress),
         }
       : null,
+  });
+}
+
+// Holds the message unless Confirmed is true. The chat confirms before this runs as a send.
+async function sendEmail(req: ToolRequest): Promise<string | void> {
+  const to = required(req, "To");
+  const body = required(req, "Body");
+  if (!to || !body) return;
+  const confirmed = req.data.Confirmed === "true";
+  return json({
+    sent: confirmed,
+    confirmationRequired: !confirmed,
+    To: to,
+    Body: body,
   });
 }
 
@@ -253,6 +270,8 @@ function purchaseOrderDocument(row: Row): Row {
       PurchaseOrder: text(row.PurchaseOrder),
       PurchaseOrderItem: text(item.PurchaseOrderItem),
       Material: text(item.Material),
+      MaterialName: text(item.MaterialName),
+      EssentialMaterial: item.EssentialMaterial === true,
       OrderQuantity: quantity(number(item.OrderQuantity)),
       PurchaseOrderQuantityUnit: text(item.PurchaseOrderQuantityUnit),
       NetPriceAmount: money(number(item.NetPriceAmount)),

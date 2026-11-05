@@ -125,6 +125,12 @@
               "content": {
                 "header": {
                   "actions": {
+                    "askAdvisor": {
+                      "press": "workbench.ext.ObjectPage.askAdvisor",
+                      "text": "{i18n>askAdvisor}",
+                      "visible": "{= %{status} === 'awaiting_review' }",
+                      "enabled": "{= %{status} === 'awaiting_review' }"
+                    },
                     "retryInvestigation": {
                       "press": "workbench.ext.ObjectPage.retryInvestigation",
                       "text": "{i18n>retry}",

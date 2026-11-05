@@ -1,6 +1,6 @@
-partner_BusinessPartner;AddressID;Person;OrdinalNumber;EmailAddress
-17300001;1730000101;1730000102;001;ap@helios-fasteners.example
-17300002;1730000201;1730000202;001;ap@veldt-components.example
-17300003;1730000301;1730000302;001;ap@kestrel-gaskets.example
-17300004;1730000401;1730000402;001;ap@marrow-steel.example
-17300005;1730000501;1730000502;001;ap@plover-seals.example
+partner_BusinessPartner;AddressID;Person;ContactName;OrdinalNumber;EmailAddress
+17300001;1730000101;1730000102;Lena Hoffmann;001;ap@helios-fasteners.example
+17300002;1730000201;1730000202;Bram de Wit;001;ap@veldt-components.example
+17300003;1730000301;1730000302;Priya Shah;001;ap@kestrel-gaskets.example
+17300004;1730000401;1730000402;Erik Lind;001;ap@marrow-steel.example
+17300005;1730000501;1730000502;Camille Bernard;001;ap@plover-seals.example

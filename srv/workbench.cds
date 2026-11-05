@@ -17,6 +17,16 @@ service InvestigationService @(path: '/workbench') {
   };
   @readonly entity EventInbox as projection on invc.EventInbox;
   action retryInvestigation(ID: UUID);
+  action askInvestigation(ID: UUID, question: String) returns ChatReply;
+  action confirmSendEmail(ID: UUID) returns ChatReply;
+
+  type ChatReply {
+    reply : String(4000);
+    recommendedAction : String;
+    emailTo : String(241);
+    emailBody : String(4000);
+    confirmationRequired : Boolean;
+  }
   action releasePaymentBlock(investigationId: UUID, actor: String) returns Decision;
   action postSubsequentCredit(investigationId: UUID, actor: String) returns Decision;
   action prepareSupplierContact(investigationId: UUID, actor: String) returns Decision;

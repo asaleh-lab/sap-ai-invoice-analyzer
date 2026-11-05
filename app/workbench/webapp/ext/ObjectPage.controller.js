@@ -1,4 +1,6 @@
-sap.ui.define(["sap/m/MessageBox", "sap/m/Dialog", "sap/m/Button", "sap/m/TextArea"], function (MessageBox, Dialog, Button, TextArea) {
+sap.ui.define(
+  ["sap/m/MessageBox", "sap/m/Dialog", "sap/m/Button", "sap/m/TextArea", "sap/m/VBox", "sap/m/Text", "sap/m/Input", "sap/m/ScrollContainer"],
+  function (MessageBox, Dialog, Button, TextArea, VBox, Text, Input, ScrollContainer) {
   "use strict";
   function text(key, args) {
     const component = Object.values(sap.ui.core.Component.registry.all()).find((entry) => entry.getModel && entry.getModel("i18n"));
@@ -90,6 +92,67 @@ sap.ui.define(["sap/m/MessageBox", "sap/m/Dialog", "sap/m/Button", "sap/m/TextAr
           dialog.destroy();
         },
       });
+      dialog.open();
+    },
+    askAdvisor: async function (context) {
+      context = caseContext(context);
+      const id = context && context.getProperty("ID");
+      if (!id || context.getProperty("status") !== "awaiting_review") return;
+      const thread = new VBox({ width: "100%", renderType: "Bare" });
+      const input = new Input({ width: "100%", placeholder: text("askPlaceholder") });
+      async function load() {
+        thread.destroyItems();
+        const response = await fetch("/workbench/Investigations(" + id + ")/messages?$orderby=askedAt");
+        const body = await response.json();
+        (body.value || []).forEach(function (message) {
+          thread.addItem(
+            new Text({
+              text: (message.role === "advisor" ? text("advisor") : text("reviewer")) + ": " + message.text,
+            }).addStyleClass("sapUiSmallMarginBottom"),
+          );
+        });
+      }
+      const dialog = new Dialog({
+        title: text("askAdvisor"),
+        contentWidth: "36rem",
+        content: [
+          new ScrollContainer({ height: "16rem", vertical: true, content: thread }),
+          input,
+        ],
+        beginButton: new Button({
+          text: text("send"),
+          type: "Emphasized",
+          press: async function () {
+            const question = input.getValue().trim();
+            if (!question) return;
+            input.setValue("");
+            const response = await fetch("/workbench/askInvestigation", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({ ID: id, question: question }),
+            });
+            if (!response.ok) {
+              const body = await response.json().catch(function () {
+                return {};
+              });
+              MessageBox.error((body.error && body.error.message) || text("actionRejected"));
+              return;
+            }
+            await load();
+            await context.requestSideEffects(["recommendedAction"]);
+          },
+        }),
+        endButton: new Button({
+          text: text("cancel"),
+          press: function () {
+            dialog.close();
+          },
+        }),
+        afterClose: function () {
+          dialog.destroy();
+        },
+      });
+      await load();
       dialog.open();
     },
     retryInvestigation: async function (context) {

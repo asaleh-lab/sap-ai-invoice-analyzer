@@ -5,6 +5,7 @@ import path from "node:path";
 import { registerSimulatedEvents, resumeReceivedRows } from "./events.ts";
 import { registerPublisher } from "./publisher.ts";
 import { registerHumanActions } from "./actions.ts";
+import { registerFollowUp } from "./chat.ts";
 import { registerRetry } from "./investigation.ts";
 import { registerWorkbenchSummary } from "./summary.ts";
 
@@ -54,6 +55,7 @@ cds.on("bootstrap", (app) => {
   registerSimulatedEvents(routes);
   registerPublisher(routes);
   registerRetry();
+  registerFollowUp();
   registerHumanActions();
   registerWorkbenchSummary();
   resumeReceivedRows();
