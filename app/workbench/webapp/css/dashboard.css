@@ -40,11 +40,65 @@
 }
 
 .workbenchPanel {
-  flex: 1 1 18rem;
-  min-width: 18rem;
+  flex: 0 0 auto;
+  width: 15rem;
+  min-width: 15rem;
+  max-width: 15rem;
 }
 
 .workbenchOutcomeTiles {
   gap: 0.75rem;
-  align-items: flex-start;
+  align-items: stretch;
+}
+
+.workbenchOutcomeTiles .workbenchTile,
+.workbenchOutcomeTiles .sapMGT {
+  width: 100%;
+  max-width: none;
+}
+
+.sapMDialog.advisorChatPane {
+  top: auto !important;
+  right: 1rem !important;
+  bottom: 1rem !important;
+  left: auto !important;
+  height: auto !important;
+  max-height: none !important;
+  width: 26rem !important;
+  max-width: calc(100% - 2rem) !important;
+  margin: 0 !important;
+  transform: none !important;
+}
+
+.advisorChatUser,
+.advisorChatModel {
+  max-width: 85%;
+  margin: 0.35rem 0.75rem;
+  padding: 0.45rem 0.7rem;
+  border-radius: 0.75rem;
+  box-sizing: border-box;
+}
+
+.advisorChatUser {
+  align-self: flex-end;
+  margin-left: auto;
+  background: var(--sapButton_Emphasized_Background, #0070f2);
+  color: var(--sapContent_ContrastTextColor, #fff);
+}
+
+.advisorChatModel {
+  align-self: flex-start;
+  background: var(--sapList_Background, #fff);
+  border: 1px solid var(--sapList_BorderColor, #d9d9d9);
+}
+
+.advisorChatRole {
+  font-size: 0.75rem;
+  opacity: 0.75;
+  display: block;
+  margin-bottom: 0.15rem;
+}
+
+.advisorChatUser .sapMText {
+  color: inherit;
 }

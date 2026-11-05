@@ -27,11 +27,6 @@
             <NumericContent value="{summary>/closed}" withMargin="false" />
           </TileContent>
         </GenericTile>
-        <GenericTile class="workbenchTile" header="{i18n>contactDrafts}" frameType="OneByHalf">
-          <TileContent>
-            <NumericContent value="{summary>/contactDrafts}" withMargin="false" />
-          </TileContent>
-        </GenericTile>
       </HBox>
       <HBox class="workbenchPanels">
         <layoutData>
@@ -52,6 +47,11 @@
             <GenericTile class="workbenchTile" header="{i18n>dismissed}" frameType="OneByHalf">
               <TileContent>
                 <NumericContent value="{summary>/dismissed}" withMargin="false" />
+              </TileContent>
+            </GenericTile>
+            <GenericTile class="workbenchTile" header="{i18n>contactDrafts}" frameType="OneByHalf">
+              <TileContent>
+                <NumericContent value="{summary>/contactDrafts}" withMargin="false" />
               </TileContent>
             </GenericTile>
           </VBox>

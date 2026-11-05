@@ -125,37 +125,36 @@
               "content": {
                 "header": {
                   "actions": {
-                    "askAdvisor": {
-                      "press": "workbench.ext.ObjectPage.askAdvisor",
-                      "text": "{i18n>askAdvisor}",
-                      "visible": "{= %{status} === 'awaiting_review' }",
-                      "enabled": "{= %{status} === 'awaiting_review' }"
-                    },
                     "retryInvestigation": {
                       "press": "workbench.ext.ObjectPage.retryInvestigation",
                       "text": "{i18n>retry}",
-                      "visible": "{= %{status} === 'investigation_failed' }",
-                      "enabled": "{= %{status} === 'investigation_failed' }"
+                      "icon": "sap-icon://refresh",
+                      "visible": "{= %{status} === 'investigation_failed' }"
+                    },
+                    "askAdvisor": {
+                      "press": "workbench.ext.ObjectPage.askAdvisor",
+                      "text": "{i18n>askAdvisor}",
+                      "icon": "sap-icon://discussion-2"
                     },
                     "releasePaymentBlock": {
                       "press": "workbench.ext.ObjectPage.releasePaymentBlock",
                       "text": "{i18n>releasePaymentBlock}",
-                      "enabled": "{= %{status} === 'awaiting_review' && %{recommendedAction} === 'release_payment_block' }"
+                      "icon": "sap-icon://unlocked"
                     },
                     "postSubsequentCredit": {
                       "press": "workbench.ext.ObjectPage.postSubsequentCredit",
                       "text": "{i18n>postSubsequentCredit}",
-                      "enabled": "{= %{status} === 'awaiting_review' && %{recommendedAction} === 'post_subsequent_credit' }"
+                      "icon": "sap-icon://expense-report"
                     },
                     "prepareSupplierContact": {
                       "press": "workbench.ext.ObjectPage.prepareSupplierContact",
-                      "text": "{i18n>prepareSupplierContact}",
-                      "enabled": "{= %{status} === 'awaiting_review' && (%{recommendedAction} === 'contact_supplier' || %{invoicingParty} !== '') }"
+                      "text": "{i18n>callAndSendEmail}",
+                      "icon": "sap-icon://email"
                     },
                     "dismissInvestigation": {
                       "press": "workbench.ext.ObjectPage.dismissInvestigation",
                       "text": "{i18n>dismiss}",
-                      "enabled": "{= %{status} === 'awaiting_review' }"
+                      "icon": "sap-icon://decline"
                     }
                   }
                 }

@@ -1,6 +1,6 @@
 sap.ui.define(
-  ["sap/m/MessageBox", "sap/m/Dialog", "sap/m/Button", "sap/m/TextArea", "sap/m/VBox", "sap/m/Text", "sap/m/Input", "sap/m/ScrollContainer"],
-  function (MessageBox, Dialog, Button, TextArea, VBox, Text, Input, ScrollContainer) {
+  ["sap/ui/core/mvc/ControllerExtension", "sap/m/OverflowToolbarLayoutData", "sap/m/MessageBox", "sap/m/Dialog", "sap/m/Button", "sap/m/TextArea", "sap/m/VBox", "sap/m/Text", "sap/m/Input", "sap/m/ScrollContainer"],
+  function (ControllerExtension, OverflowToolbarLayoutData, MessageBox, Dialog, Button, TextArea, VBox, Text, Input, ScrollContainer) {
   "use strict";
   function text(key, args) {
     const component = Object.values(sap.ui.core.Component.registry.all()).find((entry) => entry.getModel && entry.getModel("i18n"));
@@ -30,10 +30,41 @@ sap.ui.define(
     return source && source.getBindingContext ? source.getBindingContext() : null;
   }
 
-  return {
+  const actionIcons = {
+    askAdvisor: "sap-icon://discussion-2",
+    retryInvestigation: "sap-icon://refresh",
+    releasePaymentBlock: "sap-icon://unlocked",
+    postSubsequentCredit: "sap-icon://expense-report",
+    prepareSupplierContact: "sap-icon://email",
+    dismissInvestigation: "sap-icon://decline",
+  };
+
+  function pinAskAdvisor(view) {
+    Object.keys(actionIcons).forEach(function (name) {
+      const button = view.byId("fe::CustomAction::" + name);
+      if (button && button.setIcon) button.setIcon(actionIcons[name]);
+    });
+    const retry = view.byId("fe::CustomAction::retryInvestigation");
+    if (retry && !retry.data("pinned")) {
+      retry.data("pinned", "1");
+      retry.setLayoutData(new OverflowToolbarLayoutData({ priority: "NeverOverflow" }));
+      const bar = retry.getParent();
+      if (bar && bar.indexOfContent && bar.indexOfContent(retry) > 0) {
+        bar.removeContent(retry);
+        bar.insertContent(retry, 0);
+      }
+    }
+  }
+
+  return ControllerExtension.extend("workbench.ext.ObjectPage", {
+    override: {
+      onAfterRendering: function () {
+        pinAskAdvisor(this.base.getView());
+      },
+    },
     releasePaymentBlock: async function (context) {
       context = caseContext(context);
-      if (!context || context.getProperty("recommendedAction") !== "release_payment_block") return;
+      if (!context) return;
       await postAction(context, "releasePaymentBlock", {
         investigationId: context.getProperty("ID"),
         actor: "local.reviewer",
@@ -41,7 +72,7 @@ sap.ui.define(
     },
     postSubsequentCredit: async function (context) {
       context = caseContext(context);
-      if (!context || context.getProperty("recommendedAction") !== "post_subsequent_credit") return;
+      if (!context) return;
       const posted = await postAction(context, "postSubsequentCredit", {
         investigationId: context.getProperty("ID"),
         actor: "local.reviewer",
@@ -50,16 +81,16 @@ sap.ui.define(
     },
     prepareSupplierContact: async function (context) {
       context = caseContext(context);
-      if (!context || context.getProperty("status") !== "awaiting_review") return;
+      if (!context) return;
       const draft = await postAction(context, "prepareSupplierContact", {
         investigationId: context.getProperty("ID"),
         actor: "local.reviewer",
       });
-      if (draft) MessageBox.information(text("draftStored", [draft.emailDraftTo, draft.emailDraftBody]));
+      if (draft) MessageBox.information(text("emailSent"));
     },
     dismissInvestigation: async function (context) {
       context = caseContext(context);
-      if (!context || context.getProperty("status") !== "awaiting_review") return;
+      if (!context) return;
       const reason = new TextArea({ width: "100%", rows: 4, placeholder: text("dismissPlaceholder") });
       const dialog = new Dialog({
         title: text("dismiss"),
@@ -97,50 +128,79 @@ sap.ui.define(
     askAdvisor: async function (context) {
       context = caseContext(context);
       const id = context && context.getProperty("ID");
-      if (!id || context.getProperty("status") !== "awaiting_review") return;
+      if (!id) return;
       const thread = new VBox({ width: "100%", renderType: "Bare" });
+      const scroll = new ScrollContainer({
+        width: "100%",
+        height: "28rem",
+        vertical: true,
+        horizontal: false,
+        content: thread,
+      }).addStyleClass("advisorChatThread");
       const input = new Input({ width: "100%", placeholder: text("askPlaceholder") });
+      const advisorLabel = text("advisor");
+      const reviewerLabel = text("reviewer");
+      function bubble(role, body) {
+        const fromAdvisor = role === "advisor";
+        return new VBox({
+          items: [
+            new Text({ text: fromAdvisor ? advisorLabel : reviewerLabel }).addStyleClass("advisorChatRole"),
+            new Text({ text: body, wrapping: true }),
+          ],
+        }).addStyleClass(fromAdvisor ? "advisorChatModel" : "advisorChatUser");
+      }
+      function showLatest() {
+        setTimeout(function () {
+          const dom = scroll.getDomRef("scroll") || scroll.getDomRef();
+          if (dom) dom.scrollTop = dom.scrollHeight;
+        }, 0);
+      }
       async function load() {
         thread.destroyItems();
         const response = await fetch("/workbench/Investigations(" + id + ")/messages?$orderby=askedAt");
         const body = await response.json();
         (body.value || []).forEach(function (message) {
-          thread.addItem(
-            new Text({
-              text: (message.role === "advisor" ? text("advisor") : text("reviewer")) + ": " + message.text,
-            }).addStyleClass("sapUiSmallMarginBottom"),
-          );
+          thread.addItem(bubble(message.role, message.text));
         });
+        showLatest();
       }
+      async function send() {
+        const question = input.getValue().trim();
+        if (!question) return;
+        input.setValue("");
+        const response = await fetch("/workbench/askInvestigation", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ ID: id, question: question }),
+        });
+        if (!response.ok) {
+          const body = await response.json().catch(function () {
+            return {};
+          });
+          MessageBox.error((body.error && body.error.message) || text("actionRejected"));
+          return;
+        }
+        await load();
+        await context.requestSideEffects(["recommendedAction"]);
+      }
+      input.attachSubmit(send);
       const dialog = new Dialog({
         title: text("askAdvisor"),
-        contentWidth: "36rem",
+        contentWidth: "26rem",
+        verticalScrolling: false,
+        horizontalScrolling: false,
         content: [
-          new ScrollContainer({ height: "16rem", vertical: true, content: thread }),
-          input,
+          new VBox({
+            width: "100%",
+            height: "100%",
+            renderType: "Bare",
+            items: [scroll, input],
+          }).addStyleClass("advisorChatBody"),
         ],
         beginButton: new Button({
           text: text("send"),
           type: "Emphasized",
-          press: async function () {
-            const question = input.getValue().trim();
-            if (!question) return;
-            input.setValue("");
-            const response = await fetch("/workbench/askInvestigation", {
-              method: "POST",
-              headers: { "content-type": "application/json" },
-              body: JSON.stringify({ ID: id, question: question }),
-            });
-            if (!response.ok) {
-              const body = await response.json().catch(function () {
-                return {};
-              });
-              MessageBox.error((body.error && body.error.message) || text("actionRejected"));
-              return;
-            }
-            await load();
-            await context.requestSideEffects(["recommendedAction"]);
-          },
+          press: send,
         }),
         endButton: new Button({
           text: text("cancel"),
@@ -151,6 +211,11 @@ sap.ui.define(
         afterClose: function () {
           dialog.destroy();
         },
+      });
+      dialog.addStyleClass("advisorChatPane");
+      dialog.attachAfterOpen(function () {
+        if (dialog.oPopup && dialog.oPopup.setModal) dialog.oPopup.setModal(false);
+        showLatest();
       });
       await load();
       dialog.open();
@@ -166,5 +231,5 @@ sap.ui.define(
       });
       await context.requestSideEffects(["status", "paymentBlockingReason", "outcome", "closedAt"]);
     },
-  };
+  });
 });
