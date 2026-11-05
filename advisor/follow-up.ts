@@ -50,9 +50,9 @@ export async function answerFollowUp(
         "The reviewer writing the email is " +
         facts.reviewerName +
         ". Sign the email with that name and greet the contact by name. " +
-        "Case: supplier invoice " +
+        "Case, all of it is available if the reviewer asks: supplier invoice " +
         facts.supplierInvoice +
-        " fiscal year " +
+        ", fiscal year " +
         facts.fiscalYear +
         ", purchase order " +
         facts.purchaseOrder +
@@ -62,7 +62,8 @@ export async function answerFollowUp(
         facts.priceDifference +
         ", quantity difference " +
         facts.quantityDifference +
-        ". When you write an email, copy the supplier invoice, fiscal year, purchase order, and the difference into the body. " +
+        ". Mention a fact only when it answers the question or explains the discrepancy. " +
+        "Leave out the fiscal year when it is the current year, and leave out a difference of zero, unless the reviewer asks for that figure. " +
         "Reply with one JSON object {\"reply\":\"...\",\"recommendedAction\":\"\",\"email\":null}. " +
         "Set email to {\"to\":\"" +
         facts.supplierEmail +
@@ -105,7 +106,7 @@ export function scriptedReply(question: string, facts: FollowUpFacts): { reply: 
   const email = /email|e-mail/i.test(question) && facts.supplierEmail
     ? {
         to: facts.supplierEmail,
-        body: `Dear ${facts.contactName},\n\nPlease correct supplier invoice ${facts.supplierInvoice} (${facts.fiscalYear}) so it matches purchase order ${facts.purchaseOrder} item ${facts.purchaseOrderItem}. The price difference is ${facts.priceDifference} and the quantity difference is ${facts.quantityDifference}.\n\n${facts.reviewerName}`,
+        body: `Dear ${facts.contactName},\n\nPlease correct supplier invoice ${facts.supplierInvoice} so it matches purchase order ${facts.purchaseOrder}. ${emailFacts(facts, question)}.\n\n${facts.reviewerName}`,
       }
     : null;
   if (email) {
@@ -132,6 +133,17 @@ export function scriptedReply(question: string, facts: FollowUpFacts): { reply: 
     recommendedAction: action,
     email: null,
   };
+}
+
+function emailFacts(facts: FollowUpFacts, question: string): string {
+  const parts = [`supplier invoice ${facts.supplierInvoice}`, `purchase order ${facts.purchaseOrder}`];
+  if (facts.purchaseOrderItem) parts.push(`item ${facts.purchaseOrderItem}`);
+  const asksYear = /year/i.test(question);
+  const asksQuantity = /quantity/i.test(question);
+  if (asksYear || facts.fiscalYear !== String(new Date().getFullYear())) parts.push(`fiscal year ${facts.fiscalYear}`);
+  if (facts.priceDifference !== 0) parts.push(`price difference ${facts.priceDifference}`);
+  if (asksQuantity || facts.quantityDifference !== 0) parts.push(`quantity difference ${facts.quantityDifference}`);
+  return parts.join(", ");
 }
 
 function emailDraft(value: unknown, supplierEmail: string): EmailDraft | null {
