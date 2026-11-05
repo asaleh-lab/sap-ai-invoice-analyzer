@@ -60,6 +60,7 @@ test("publisher files valid invoices and the seed covers several suppliers", asy
     assert.match(html, /data-template="quantity"/);
     assert.match(html, /data-template="matching"/);
     assert.match(html, /data-template="unblocked"/);
+    assert.match(html, /id="reset"/);
     assert.match(html, /href="\/workbench-ui"/);
     assert.doesNotMatch(html, /[Rr]etry/);
 
@@ -96,6 +97,19 @@ test("publisher files valid invoices and the seed covers several suppliers", asy
 
     const stored = await get<{ value: Array<{ status: string }> }>("/workbench/EventInbox");
     assert.ok(stored.value.every((row) => row.status !== "invalid"));
+
+    const reset = await fetch(`${base}/publisher/reset`, { method: "POST" });
+    assert.equal(reset.status, 200);
+    const afterReset = await get<{ value: unknown[] }>("/workbench/EventInbox");
+    const openCases = await get<{ value: unknown[] }>("/workbench/Investigations");
+    assert.deepEqual(afterReset.value, []);
+    assert.deepEqual(openCases.value, []);
+    const seeded = await get<{ SupplierInvoice: string }>(
+      "/simulated-s4/SupplierInvoices(SupplierInvoice='5100001001',FiscalYear='2026')",
+    );
+    assert.equal(seeded.SupplierInvoice, "5100001001");
+    const gone = await fetch(`${base}/simulated-s4/SupplierInvoices(SupplierInvoice='${price.supplierInvoice}',FiscalYear='2026')`);
+    assert.equal(gone.status, 404);
   } finally {
     child.kill();
   }

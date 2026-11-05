@@ -37,6 +37,7 @@
     <button type="button" data-template="quantity">Quantity variance</button>
     <button type="button" data-template="matching">Matching documents with a payment block</button>
     <button type="button" data-template="unblocked">Created event with no payment block</button>
+    <button type="button" id="reset">Reset the database</button>
     <section id="result" hidden>
       <p id="scenario"></p>
       <p>Invoice <span id="invoice"></span> / <span id="year"></span></p>
@@ -59,6 +60,17 @@
           document.getElementById("case").textContent = body.caseOpened ? "A case was opened." : "No case was opened.";
         });
       }
+      document.getElementById("reset").addEventListener("click", async () => {
+        const response = await fetch("/publisher/reset", { method: "POST" });
+        const body = await response.json();
+        document.getElementById("result").hidden = false;
+        document.getElementById("scenario").textContent = response.ok
+          ? "The database is back to the seed invoices. Filed documents and open cases are gone."
+          : body.error?.message || "The database was not reset.";
+        document.getElementById("invoice").textContent = "";
+        document.getElementById("year").textContent = "";
+        document.getElementById("case").textContent = "";
+      });
     </script>
   </body>
 </html>

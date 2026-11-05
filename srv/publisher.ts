@@ -1,5 +1,7 @@
 import cds from "@sap/cds";
+import { readFileSync } from "node:fs";
 import type { IncomingMessage, ServerResponse } from "node:http";
+import path from "node:path";
 
 const createdType = "sap.s4.beh.supplierinvoice.v1.SupplierInvoice.Created.v1";
 const firstPublished = 5100004001;
@@ -12,8 +14,9 @@ type Where = {
 };
 
 type Sql = {
-  INSERT: { into(entity: string): { entries(row: Row): Promise<unknown> } };
+  INSERT: { into(entity: string): { entries(row: Row | Row[]): Promise<unknown> } };
   SELECT: { one: { from(entity: string): Where }; from(entity: string): Where };
+  DELETE: { from(entity: string): Promise<unknown> };
 };
 
 type CdsRuntime = {
@@ -23,7 +26,32 @@ type CdsRuntime = {
 };
 
 const runtime = cds as unknown as CdsRuntime;
-const { INSERT, SELECT } = runtime.ql;
+const { INSERT, SELECT, DELETE } = runtime.ql;
+
+const clearOrder = [
+  "invc.Decisions",
+  "invc.EventInbox",
+  "invc.Investigations",
+  "sap.sim.SupplierInvoicePoItems",
+  "sap.sim.SupplierInvoices",
+  "sap.sim.PurchaseOrderItems",
+  "sap.sim.PurchaseOrders",
+  "sap.sim.MaterialDocumentItems",
+  "sap.sim.MaterialDocuments",
+  "sap.sim.BusinessPartnerEmails",
+  "sap.sim.BusinessPartners",
+];
+
+const seedFiles: Array<[string, string]> = [
+  ["sap.sim.BusinessPartners", "sap.sim-BusinessPartners.csv"],
+  ["sap.sim.BusinessPartnerEmails", "sap.sim-BusinessPartnerEmails.csv"],
+  ["sap.sim.PurchaseOrders", "sap.sim-PurchaseOrders.csv"],
+  ["sap.sim.PurchaseOrderItems", "sap.sim-PurchaseOrderItems.csv"],
+  ["sap.sim.MaterialDocuments", "sap.sim-MaterialDocuments.csv"],
+  ["sap.sim.MaterialDocumentItems", "sap.sim-MaterialDocumentItems.csv"],
+  ["sap.sim.SupplierInvoices", "sap.sim-SupplierInvoices.csv"],
+  ["sap.sim.SupplierInvoicePoItems", "sap.sim-SupplierInvoicePoItems.csv"],
+];
 
 type TemplateName = "price" | "quantity" | "matching" | "unblocked";
 
@@ -84,6 +112,16 @@ const templates: Record<TemplateName, Template> = {
 export function registerPublisher(app: {
   post(path: string, handler: (req: IncomingMessage, res: ServerResponse) => void): void;
 }): void {
+  app.post("/publisher/reset", (_req, res) => {
+    void resetDatabase()
+      .then(() => {
+        reply(res, 200, { reset: true });
+      })
+      .catch((error: unknown) => {
+        const message = error instanceof Error ? error.message : "The database was not reset.";
+        reply(res, 500, { error: { code: "FAILED", message } });
+      });
+  });
   app.post("/publisher/invoices", (req, res) => {
     const chunks: Buffer[] = [];
     req.on("data", (chunk: Buffer) => {
@@ -106,6 +144,30 @@ export function registerPublisher(app: {
 function reply(res: ServerResponse, status: number, body: unknown): void {
   res.writeHead(status, { "content-type": "application/json" });
   res.end(JSON.stringify(body));
+}
+
+async function resetDatabase(): Promise<void> {
+  await runtime.tx(async () => {
+    for (const entity of clearOrder) await DELETE.from(entity);
+    for (const [entity, file] of seedFiles) {
+      await INSERT.into(entity).entries(readSeed(file));
+    }
+  });
+}
+
+function readSeed(file: string): Row[] {
+  const text = readFileSync(path.resolve("db/data", file), "utf8").replace(/^\uFEFF/, "");
+  const [header, ...lines] = text.split(/\r?\n/).filter((line) => line.trim() !== "");
+  const columns = header.split(";");
+  return lines.map((line) => {
+    const cells = line.split(";");
+    const row: Row = {};
+    columns.forEach((column, index) => {
+      const value = cells[index] ?? "";
+      row[column] = value === "true" ? true : value === "false" ? false : value;
+    });
+    return row;
+  });
 }
 
 async function publish(raw: string): Promise<Row> {
