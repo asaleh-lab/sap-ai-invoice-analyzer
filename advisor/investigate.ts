@@ -50,58 +50,8 @@ const Phase = Annotation.Root({
 
 export async function investigate(request: InvestigateRequest): Promise<Advice> {
   const settings = advisorSettings();
-  if (settings.apiKey === "") return scripted(request, settings.tolerance);
+  if (settings.apiKey === "") throw new Error("A model key is required.");
   return modelAdvice(request, settings);
-}
-
-async function scripted(request: InvestigateRequest, tolerance: number): Promise<Advice> {
-  const called: string[] = [];
-  const bag: Record<string, unknown> = {};
-  const invoiceKey = request.input;
-
-  const graph = new StateGraph(Phase)
-    .addNode("invoice", async () => {
-      bag.invoice = await call(request.tools, called, "get_supplier_invoice", invoiceKey);
-      return { phase: "invoice" };
-    })
-    .addNode("references", async () => {
-      const invoice = asRecord(bag.invoice);
-      const item = firstItem(invoice);
-      if (item?.PurchaseOrder && item.PurchaseOrderItem) {
-        bag.purchaseOrder = await call(request.tools, called, "get_purchase_order", {
-          PurchaseOrder: String(item.PurchaseOrder),
-        });
-        bag.goodsReceipts = await call(request.tools, called, "get_goods_receipts", {
-          PurchaseOrder: String(item.PurchaseOrder),
-          PurchaseOrderItem: String(item.PurchaseOrderItem),
-        });
-      }
-      return { phase: "references" };
-    })
-    .addNode("variance", async () => {
-      bag.variance = await call(request.tools, called, "calculate_invoice_variance", invoiceKey);
-      return { phase: "variance" };
-    })
-    .addNode("context", async () => {
-      const invoice = asRecord(bag.invoice);
-      const party = text(invoice?.InvoicingParty);
-      if (party !== "") {
-        bag.history = await call(request.tools, called, "get_supplier_invoice_history", { InvoicingParty: party });
-        const order = asRecord(bag.purchaseOrder);
-        const supplier = text(order?.Supplier) || party;
-        bag.partner = await call(request.tools, called, "get_supplier_business_partner", { Supplier: supplier });
-      }
-      return { phase: "context" };
-    })
-    .addEdge(START, "invoice")
-    .addEdge("invoice", "references")
-    .addEdge("references", "variance")
-    .addEdge("variance", "context")
-    .addEdge("context", END)
-    .compile();
-
-  await graph.invoke({ phase: "start" });
-  return adviceFromBag(request.input.SupplierInvoice, bag, called, null, tolerance);
 }
 
 async function modelAdvice(request: InvestigateRequest, settings: AdvisorSettings): Promise<Advice> {
@@ -200,7 +150,7 @@ async function modelAdvice(request: InvestigateRequest, settings: AdvisorSetting
     }),
   ]);
 
-  if (bag.fallback === true) return scripted(request, settings.tolerance);
+  if (bag.fallback === true) throw new Error("The invoice and the variance tool were not called.");
   return adviceFromBag(request.input.SupplierInvoice, bag, called, { recommendedAction, narrative }, settings.tolerance);
 }
 
@@ -256,20 +206,6 @@ function parseJson(content: string): Record<string, unknown> | null {
   } catch {
     return null;
   }
-}
-
-function items(invoice: Record<string, unknown> | null): Record<string, unknown>[] {
-  return itemsOf(invoice, "to_SuplrInvcItemPurOrdRef");
-}
-
-function firstItem(invoice: Record<string, unknown> | null): Record<string, unknown> | null {
-  return items(invoice)[0] ?? null;
-}
-
-function itemsOf(row: Record<string, unknown> | null, field: string): Record<string, unknown>[] {
-  const value = row?.[field];
-  if (!Array.isArray(value)) return [];
-  return value.filter((item): item is Record<string, unknown> => item != null && typeof item === "object");
 }
 
 function asRecord(value: unknown): Record<string, unknown> | null {

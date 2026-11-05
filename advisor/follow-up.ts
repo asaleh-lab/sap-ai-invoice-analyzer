@@ -34,7 +34,13 @@ export async function answerFollowUp(
 ): Promise<{ reply: string; recommendedAction: string; email: EmailDraft | null }> {
   const grounded = scriptedReply(question, facts);
   const settings = advisorSettings();
-  if (!settings.apiKey) return grounded;
+  if (!settings.apiKey) {
+    return {
+      reply: "A model key is required.",
+      recommendedAction: facts.currentAction,
+      email: null,
+    };
+  }
   try {
     const model = new ChatOpenAI({
       apiKey: settings.apiKey,

@@ -29,7 +29,8 @@ test("supplier invoice created events open one case", async () => {
 
     const cases = await investigations("5100001001", "2026");
     assert.equal(cases.length, 1);
-    assert.equal(cases[0]?.status, "awaiting_review");
+    assert.equal(cases[0]?.status, "investigation_failed");
+    assert.match(String(cases[0]?.narrative), /model key is required/);
     assert.equal(cases[0]?.invoicingParty, "17300001");
     assert.equal(cases[0]?.documentCurrency, "EUR");
     assert.equal(Number(cases[0]?.invoiceGrossAmount), 119);

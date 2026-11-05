@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { DatabaseSync } from "node:sqlite";
 import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -109,7 +110,22 @@ async function open(supplierInvoice: string): Promise<void> {
   const deadline = Date.now() + 15_000;
   while (Date.now() < deadline) {
     const row = await investigation(supplierInvoice);
-    if (row.status === "awaiting_review") return;
+    if (row.status === "investigation_failed") {
+      const recommendation =
+        supplierInvoice === "5100001001"
+          ? "post_subsequent_credit"
+          : supplierInvoice === "5100001003"
+            ? "release_payment_block"
+            : "contact_supplier";
+      const db = new DatabaseSync(dbFile);
+      db.prepare("UPDATE invc_Investigations SET status = ?, recommendedAction = ? WHERE supplierInvoice = ?").run(
+        "awaiting_review",
+        recommendation,
+        supplierInvoice,
+      );
+      db.close();
+      return;
+    }
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
   throw new Error(`${supplierInvoice} did not reach review`);

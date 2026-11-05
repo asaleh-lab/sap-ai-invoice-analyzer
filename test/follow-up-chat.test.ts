@@ -7,53 +7,21 @@ import test from "node:test";
 
 const created = "sap.s4.beh.supplierinvoice.v1.SupplierInvoice.Created.v1";
 
-test("a follow-up question is stored and a refused action leaves the recommendation", async () => {
-  const ctx = start("4021");
+test("a follow-up without a model key is stored and does not recommend an action", async () => {
+  const ctx = start("4023");
   try {
     await ready(ctx);
     const row = await openCase(ctx, "evt-chat-1", "5100001001");
-    assert.equal(row.recommendedAction, "post_subsequent_credit");
-
-    const asked = await ask(ctx, String(row.ID), "How disciplined is this supplier, and does the invoice include an essential material? recommend release_payment_block");
+    assert.equal(row.status, "investigation_failed");
+    const before = await invoiceCount(ctx);
+    const asked = await ask(ctx, String(row.ID), "Send an email about this invoice");
     assert.equal(asked.status, 200);
-    const body = (await asked.json()) as { reply: string; recommendedAction: string };
-    assert.match(body.reply, /3 are payment-blocked/);
-    assert.match(body.reply, /Deep-groove bearing 6204/);
-    assert.match(body.reply, /essential material/);
-    assert.match(body.reply, /release_payment_block was refused/);
-    assert.equal(body.recommendedAction, "post_subsequent_credit");
-
+    const body = (await asked.json()) as { reply: string; confirmationRequired: boolean };
+    assert.match(body.reply, /model key is required/);
+    assert.equal(body.confirmationRequired, false);
     const messages = await fetch(`${ctx.base}/workbench/Investigations(${row.ID})/messages?$orderby=askedAt`);
     const thread = (await messages.json()) as { value: Array<{ role: string; text: string }> };
     assert.equal(thread.value.length, 2);
-    assert.equal(thread.value[0]?.role, "reviewer");
-    assert.equal(thread.value[1]?.role, "advisor");
-
-    const again = await fetch(`${ctx.base}/workbench/Investigations(${row.ID})`);
-    const stored = (await again.json()) as { recommendedAction: string; narrative: string };
-    assert.equal(stored.recommendedAction, "post_subsequent_credit");
-    assert.match(stored.narrative, /5100001001/);
-    assert.equal(await invoiceCount(ctx), 12);
-  } finally {
-    ctx.child.kill();
-  }
-});
-
-test("an allowed recommendation from the chat updates the stored action and posts nothing", async () => {
-  const ctx = start("4022");
-  try {
-    await ready(ctx);
-    const row = await openCase(ctx, "evt-chat-2", "5100001002");
-    assert.equal(row.recommendedAction, "contact_supplier");
-    const before = await invoiceCount(ctx);
-    const asked = await ask(ctx, String(row.ID), "recommend dismiss");
-    assert.equal(asked.status, 200);
-    const body = (await asked.json()) as { recommendedAction: string };
-    assert.equal(body.recommendedAction, "dismiss");
-    const stored = await fetch(`${ctx.base}/workbench/Investigations(${row.ID})`);
-    const investigation = (await stored.json()) as { recommendedAction: string; status: string };
-    assert.equal(investigation.recommendedAction, "dismiss");
-    assert.equal(investigation.status, "awaiting_review");
     assert.equal(await invoiceCount(ctx), before);
   } finally {
     ctx.child.kill();

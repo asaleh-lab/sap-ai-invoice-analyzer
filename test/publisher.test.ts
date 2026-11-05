@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-const port = "4021";
+const port = "4024";
 const base = `http://127.0.0.1:${port}`;
 const dbFile = path.join(mkdtempSync(path.join(tmpdir(), "invoice-publisher-")), "db.sqlite");
 const created = "sap.s4.beh.supplierinvoice.v1.SupplierInvoice.Created.v1";

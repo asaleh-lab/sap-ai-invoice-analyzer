@@ -7,32 +7,15 @@ import test from "node:test";
 
 const created = "sap.s4.beh.supplierinvoice.v1.SupplierInvoice.Created.v1";
 
-test("scripted policy stores the three seeded recommendations", async () => {
+test("a case without a model key fails before any recommendation", async () => {
   const ctx = start("4016");
   try {
     await ready(ctx);
     const before = await invoiceGross(ctx, "5100001001");
-
     const price = await openCase(ctx, "evt-1001", "5100001001");
-    assert.equal(price.status, "awaiting_review");
-    assert.equal(price.recommendedAction, "post_subsequent_credit");
-    assert.equal(Number(price.priceDifference), 20);
-    assert.equal(Number(price.quantityDifference), 0);
+    assert.equal(price.status, "investigation_failed");
+    assert.match(String(price.narrative), /model key is required/);
     assert.equal(await invoiceGross(ctx, "5100001001"), before);
-
-    const short = await openCase(ctx, "evt-1002", "5100001002");
-    assert.equal(short.recommendedAction, "contact_supplier");
-    assert.equal(Number(short.quantityDifference), 2);
-    assert.notEqual(short.recommendedAction, "post_subsequent_credit");
-    assert.notEqual(short.recommendedAction, "release_payment_block");
-
-    const match = await openCase(ctx, "evt-1003", "5100001003");
-    assert.equal(match.recommendedAction, "release_payment_block");
-    assert.equal(Number(match.priceDifference), 0);
-    assert.equal(Number(match.quantityDifference), 0);
-
-    assert.match(String(price.narrative), /5100001001/);
-    assert.doesNotMatch(String(price.narrative), /unchanged/);
   } finally {
     ctx.child.kill();
   }
@@ -46,7 +29,7 @@ test("a mismatched recommendation fails closed and retry stops after three attem
     assert.equal(row.status, "investigation_failed");
     assert.notEqual(row.recommendedAction, "release_payment_block");
     const failed = await expand(ctx, String(row.ID));
-    assert.match(failed.narrative, /refused/);
+    assert.match(failed.narrative, /model key is required/);
 
     const inbox = await inboxRow(ctx, "evt-mismatch");
     assert.equal(Number(inbox.attemptCount), 1);

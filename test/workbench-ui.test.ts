@@ -21,10 +21,12 @@ test("outcome labels follow a mocked summary", () => {
     [1, 1, 1],
   );
   const fragment = readFileSync("app/workbench/webapp/ext/Dashboard.fragment.xml", "utf8");
-  for (const row of labels) assert.match(fragment, new RegExp(row.label));
-  assert.match(fragment, /text="Dashboard"/);
-  assert.match(fragment, /text="Pending"/);
-  assert.match(fragment, /text="Processed"/);
+  for (const row of ["{i18n>released}", "{i18n>subsequentCreditPosted}", "{i18n>dismissed}"]) {
+    assert.match(fragment, new RegExp(row.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+  }
+  assert.match(fragment, /text="\{i18n>dashboard\}"/);
+  assert.match(fragment, /text="\{i18n>pending\}"/);
+  assert.match(fragment, /text="\{i18n>processed\}"/);
   assert.match(fragment, /press=".showPending"/);
   assert.match(fragment, /press=".showProcessed"/);
   assert.match(fragment, /press=".refreshSummary"/);
@@ -51,20 +53,19 @@ test("pending workbench lists simulated cases and hides retry until a failure", 
     const page = await fetch(`${base}/workbench-ui/index.html`);
     assert.equal(page.status, 200);
     const html = await page.text();
-    assert.match(html, /simulated S\/4HANA Cloud data/);
+    assert.match(html, /Pending investigations/);
     const sandbox = await fetch(`${base}/workbench-ui/test/flpSandbox.html`);
     assert.equal(sandbox.status, 200);
     assert.match(await sandbox.text(), /createRenderer/);
     const manifest = await (await fetch(`${base}/workbench-ui/manifest.json`)).json();
     const list = manifest["sap.ui5"].routing.targets.InvestigationsList.options.settings;
-    assert.equal(list.content.table.noData.text, "No cases are waiting.");
+    assert.equal(list.content.table.noData.text, "{i18n>noCases}");
     assert.equal(list.content.header, undefined);
     const views = list.views.paths.map((view: { key: string; annotationPath: string }) => view.annotationPath);
     assert.deepEqual(views, [
       "com.sap.vocabularies.UI.v1.SelectionPresentationVariant",
       "com.sap.vocabularies.UI.v1.SelectionPresentationVariant#History",
     ]);
-    assert.equal(list.content.header.actions.retryInvestigation, undefined);
     const objectPage = manifest["sap.ui5"].routing.targets.InvestigationsObjectPage.options.settings;
     assert.equal(objectPage.content.header.actions.retryInvestigation.visible, "{= %{status} === 'investigation_failed' }");
     assert.equal(objectPage.content.header.actions.retryInvestigation.enabled, "{= %{status} === 'investigation_failed' }");
@@ -97,9 +98,9 @@ test("pending workbench lists simulated cases and hides retry until a failure", 
         status: row.status,
       })),
       [
-        { supplier: "Helios Fasteners GmbH", reference: "HF-2026-441", amount: 119, currency: "EUR", block: "A", category: "price", status: "awaiting_review" },
-        { supplier: "Helios Fasteners GmbH", reference: "HF-2026-442", amount: 95.2, currency: "EUR", block: "A", category: "quantity", status: "awaiting_review" },
-        { supplier: "Helios Fasteners GmbH", reference: "HF-2026-443", amount: 95.2, currency: "EUR", block: "A", category: "manual block", status: "awaiting_review" },
+        { supplier: "Helios Fasteners GmbH", reference: "HF-2026-441", amount: 119, currency: "EUR", block: "A", category: "unresolved", status: "investigation_failed" },
+        { supplier: "Helios Fasteners GmbH", reference: "HF-2026-442", amount: 95.2, currency: "EUR", block: "A", category: "unresolved", status: "investigation_failed" },
+        { supplier: "Helios Fasteners GmbH", reference: "HF-2026-443", amount: 95.2, currency: "EUR", block: "A", category: "unresolved", status: "investigation_failed" },
       ],
     );
 
@@ -112,14 +113,8 @@ test("pending workbench lists simulated cases and hides retry until a failure", 
       recommendedAction: string;
       poItems: Array<{ PurchaseOrder: string }>;
     };
-    assert.match(body.narrative, /5100001001/);
-    assert.equal(Number(body.priceDifference), 20);
+    assert.match(body.narrative, /model key is required/);
     assert.equal(body.poItems.some((item) => item.PurchaseOrder === "4500001001"), true);
-
-    const quantity = rows.find((row) => row.supplierInvoice === "5100001002");
-    assert.ok(quantity);
-    assert.equal(Number(quantity.quantityDifference), 2);
-    assert.equal(quantity.recommendedAction === "release_payment_block" || quantity.recommendedAction === "post_subsequent_credit", false);
 
     for (const event of samples) {
       const again = await fetch(`${base}/simulated-events`, {

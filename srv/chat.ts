@@ -49,7 +49,28 @@ export function registerFollowUp(): void {
 
 async function ask(id: string, question: string, req: ActionRequest): Promise<Row> {
   const row = (await SELECT.one.from("invc.Investigations").where({ ID: id })) as Row | null;
-  if (!row || row.status !== "awaiting_review") req.reject(409, "Questions are available on a case awaiting review.");
+  if (!row || (row.status !== "awaiting_review" && row.status !== "investigation_failed")) {
+    req.reject(409, "Questions are available on a case awaiting review.");
+  }
+  if (!advisorSettings().apiKey) {
+    const reply = "A model key is required.";
+    const now = new Date().toISOString();
+    await INSERT.into("invc.Messages").entries({
+      ID: runtime.utils.uuid(),
+      investigation_ID: id,
+      role: "reviewer",
+      text: question.slice(0, 4000),
+      askedAt: now,
+    });
+    await INSERT.into("invc.Messages").entries({
+      ID: runtime.utils.uuid(),
+      investigation_ID: id,
+      role: "advisor",
+      text: reply,
+      askedAt: new Date().toISOString(),
+    });
+    return { reply, recommendedAction: text(row.recommendedAction), emailTo: "", emailBody: "", confirmationRequired: false };
+  }
   const now = new Date().toISOString();
   await INSERT.into("invc.Messages").entries({
     ID: runtime.utils.uuid(),
