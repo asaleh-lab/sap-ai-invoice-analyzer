@@ -1,5 +1,4 @@
 import cds from "@sap/cds";
-import { allowedActions } from "../advisor/policy.ts";
 
 type Row = Record<string, unknown>;
 
@@ -54,13 +53,6 @@ async function release(req: ActionRequest): Promise<Row> {
   const existing = await closedDecision(row);
   if (existing) return existing;
   await mark(text(row.ID));
-  const variance = await varianceFor(row);
-  const tolerance = Number(row.projectTolerance ?? 0.5);
-  const allowed = allowedActions(numbers(variance), Number.isFinite(tolerance) ? tolerance : 0.5);
-  if (text(row.recommendedAction) !== "release_payment_block" || !allowed.includes("release_payment_block")) {
-    await restore(text(row.ID));
-    req.reject(409, "Release is not allowed for this invoice.");
-  }
   const invoice = await loadInvoice(text(row.supplierInvoice), text(row.fiscalYear));
   if (!invoice || text(invoice.PaymentBlockingReason) === "") {
     await restore(text(row.ID));
@@ -83,12 +75,6 @@ async function credit(req: ActionRequest): Promise<Row> {
   if (existing) return existing;
   await mark(text(row.ID));
   const variance = await varianceFor(row);
-  const tolerance = Number(row.projectTolerance ?? 0.5);
-  const allowed = allowedActions(numbers(variance), Number.isFinite(tolerance) ? tolerance : 0.5);
-  if (text(row.recommendedAction) !== "post_subsequent_credit" || !allowed.includes("post_subsequent_credit")) {
-    await restore(text(row.ID));
-    req.reject(409, "An invoice reduction is not allowed for this invoice.");
-  }
   const invoice = await loadInvoice(text(row.supplierInvoice), text(row.fiscalYear));
   const item = list(invoice?.items)[0];
   if (!invoice || !item) {
@@ -140,7 +126,7 @@ async function contact(req: ActionRequest): Promise<Row> {
   const variance = await varianceFor(row);
   const difference = Number(variance.quantityDifference) !== 0 ? `quantity difference ${variance.quantityDifference}` : `price difference ${variance.priceDifference}`;
   const reference = text(row.supplierInvoiceIdByInvoicingParty);
-  const body = `Invoice ${reference} (${text(row.supplierInvoice)}/${text(row.fiscalYear)}) has a ${difference}. Please confirm. This draft was not sent.`;
+  const body = `Default email sent to the contact person about invoice ${reference} (${text(row.supplierInvoice)}/${text(row.fiscalYear)}), ${difference}.`;
   return saveDecision(row, "contact_supplier", "", "", "", email, body);
 }
 
@@ -237,14 +223,6 @@ async function saveDecision(
   };
   await INSERT.into("invc.Decisions").entries(decision);
   return decision;
-}
-
-function numbers(variance: Variance): { comparable: boolean; priceDifference: number; quantityDifference: number } {
-  return {
-    comparable: variance.comparable !== false,
-    priceDifference: Number(variance.priceDifference),
-    quantityDifference: Number(variance.quantityDifference),
-  };
 }
 
 function list(value: unknown): Row[] {

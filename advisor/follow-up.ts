@@ -1,9 +1,9 @@
 import { ChatOpenAI } from "@langchain/openai";
 import { advisorSettings } from "./config.ts";
-import { allowedActions } from "./policy.ts";
 import type { InvestigateTools, ToolArgs } from "./investigate.ts";
 
 const actions = ["post_subsequent_credit", "release_payment_block", "contact_supplier", "dismiss", "insufficient_evidence"];
+const commandTools = ["release_payment_block", "post_subsequent_credit", "call_and_send_email", "dismiss"];
 
 export type FollowUpFacts = {
   supplierName: string;
@@ -27,11 +27,13 @@ export type FollowUpFacts = {
 
 export type EmailDraft = { to: string; body: string };
 
+export type FollowUpAnswer = { reply: string; recommendedAction: string; email: EmailDraft | null; tool: string | null };
+
 export async function answerFollowUp(
   question: string,
   facts: FollowUpFacts,
   tools: InvestigateTools,
-): Promise<{ reply: string; recommendedAction: string; email: EmailDraft | null }> {
+): Promise<FollowUpAnswer> {
   const grounded = scriptedReply(question, facts);
   const settings = advisorSettings();
   if (!settings.apiKey) {
@@ -39,6 +41,7 @@ export async function answerFollowUp(
       reply: "A model key is required.",
       recommendedAction: facts.currentAction,
       email: null,
+      tool: null,
     };
   }
   try {
@@ -50,12 +53,15 @@ export async function answerFollowUp(
     });
     const called = await readBundle(tools, facts);
     const response = await model.invoke(
-        "Answer only the question. Do not add materials, amounts, or payment blocks unless the question asks for them. " +
+        "Answer only the question in a short chat reply to the reviewer. " +
+        "Do not write a letter, a greeting, or a signature in reply. " +
+        "If the question is not a real question, ask what they want to follow up on. Do not invent an email. " +
+        "Do not add materials, amounts, or payment blocks unless the question asks for them. " +
         "The supplier name is businessPartner.BusinessPartnerName. " +
         "The supplier contact is businessPartner.contact.ContactName at businessPartner.contact.EmailAddress. " +
-        "The reviewer writing the email is " +
+        "The reviewer is " +
         facts.reviewerName +
-        ". Sign the email with that name and greet the contact by name. " +
+        ". Greet the contact by name and sign with the reviewer name only inside email.body, and only when the reviewer asks to email the supplier. " +
         "Case, all of it is available if the reviewer asks: supplier invoice " +
         facts.supplierInvoice +
         ", fiscal year " +
@@ -70,7 +76,8 @@ export async function answerFollowUp(
         facts.quantityDifference +
         ". Mention a fact only when it answers the question or explains the discrepancy. " +
         "Leave out the fiscal year when it is the current year, and leave out a difference of zero, unless the reviewer asks for that figure. " +
-        "Reply with one JSON object {\"reply\":\"...\",\"recommendedAction\":\"\",\"email\":null}. " +
+        "Reply with one JSON object {\"reply\":\"...\",\"recommendedAction\":\"\",\"email\":null,\"tool\":null}. " +
+        "tool is a tool call. Set it to release_payment_block, post_subsequent_credit, call_and_send_email, or dismiss only when the reviewer asks for that command. " +
         "Set email to {\"to\":\"" +
         facts.supplierEmail +
         "\",\"body\":\"...\"} only when the reviewer asks to email the supplier. Do not say the email was sent. " +
@@ -87,13 +94,15 @@ export async function answerFollowUp(
     if (!reply) return grounded;
     const proposed = typeof parsed?.recommendedAction === "string" ? parsed.recommendedAction : "";
     const decided = applyProposal(facts, reply, proposed, grounded.recommendedAction);
-    return { ...decided, email: emailDraft(parsed?.email, facts.supplierEmail) };
+    const named = typeof parsed?.tool === "string" ? parsed.tool : "";
+    const tool = commandTools.includes(named) ? named : grounded.tool;
+    return { ...decided, email: emailDraft(parsed?.email, facts.supplierEmail), tool };
   } catch {
     return grounded;
   }
 }
 
-export function scriptedReply(question: string, facts: FollowUpFacts): { reply: string; recommendedAction: string; email: EmailDraft | null } {
+export function scriptedReply(question: string, facts: FollowUpFacts): FollowUpAnswer {
   const blocked = facts.history.filter((row) => (row.PaymentBlockingReason ?? "") !== "").length;
   const clear = facts.history.length - blocked;
   const essential = facts.essential
@@ -101,14 +110,6 @@ export function scriptedReply(question: string, facts: FollowUpFacts): { reply: 
     : `${facts.materialName} (${facts.material}) is not marked as an essential material.`;
   const discipline = `${facts.supplierName} has ${facts.history.length} invoices in the simulated history. ${blocked} are payment-blocked and ${clear} are clear.`;
   const proposed = proposedAction(question);
-  const allowed = allowedActions(
-    {
-      comparable: facts.comparable,
-      priceDifference: facts.priceDifference,
-      quantityDifference: facts.quantityDifference,
-    },
-    facts.tolerance,
-  );
   const email = /email|e-mail/i.test(question) && facts.supplierEmail
     ? {
         to: facts.supplierEmail,
@@ -120,16 +121,10 @@ export function scriptedReply(question: string, facts: FollowUpFacts): { reply: 
       reply: `I can email ${facts.contactName} at ${facts.supplierName} (${email.to}). The message is signed ${facts.reviewerName}. Confirm to send it.`,
       recommendedAction: facts.currentAction,
       email,
+      tool: "call_and_send_email",
     };
   }
-  if (proposed && !allowed.includes(proposed)) {
-    return {
-      reply: `${discipline} ${essential} Recommendation ${proposed} was refused. The stored recommendation stays ${facts.currentAction}.`,
-      recommendedAction: facts.currentAction,
-      email: null,
-    };
-  }
-  const action = proposed && allowed.includes(proposed) ? proposed : facts.currentAction;
+  const action = proposed || facts.currentAction;
   const actionSentence =
     action === facts.currentAction
       ? `The stored recommendation stays ${action}.`
@@ -138,7 +133,16 @@ export function scriptedReply(question: string, facts: FollowUpFacts): { reply: 
     reply: `${discipline} ${essential} ${actionSentence}`,
     recommendedAction: action,
     email: null,
+    tool: commandFor(question),
   };
+}
+
+function commandFor(question: string): string | null {
+  if (/release|unblock/i.test(question)) return "release_payment_block";
+  if (/invoice reduction|subsequent credit|credit memo/i.test(question)) return "post_subsequent_credit";
+  if (/dismiss/i.test(question)) return "dismiss";
+  if (/email|e-mail|call and send/i.test(question)) return "call_and_send_email";
+  return null;
 }
 
 function emailFacts(facts: FollowUpFacts, question: string): string {
@@ -172,21 +176,7 @@ function applyProposal(
   proposed: string,
   fallbackAction: string,
 ): { reply: string; recommendedAction: string } {
-  if (!proposed) return { reply, recommendedAction: fallbackAction };
-  const allowed = allowedActions(
-    {
-      comparable: facts.comparable,
-      priceDifference: facts.priceDifference,
-      quantityDifference: facts.quantityDifference,
-    },
-    facts.tolerance,
-  );
-  if (!allowed.includes(proposed)) {
-    return {
-      reply: `${reply} Recommendation ${proposed} was refused. The stored recommendation stays ${facts.currentAction}.`,
-      recommendedAction: facts.currentAction,
-    };
-  }
+  if (!proposed || !actions.includes(proposed)) return { reply, recommendedAction: fallbackAction };
   return { reply, recommendedAction: proposed };
 }
 

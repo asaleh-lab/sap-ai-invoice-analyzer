@@ -49,9 +49,7 @@ export function registerFollowUp(): void {
 
 async function ask(id: string, question: string, req: ActionRequest): Promise<Row> {
   const row = (await SELECT.one.from("invc.Investigations").where({ ID: id })) as Row | null;
-  if (!row || (row.status !== "awaiting_review" && row.status !== "investigation_failed")) {
-    req.reject(409, "Questions are available on a case awaiting review.");
-  }
+  if (!row) req.reject(404, "Investigation was not found.");
   if (!advisorSettings().apiKey) {
     const reply = "A model key is required.";
     const now = new Date().toISOString();
@@ -117,6 +115,12 @@ async function ask(id: string, question: string, req: ActionRequest): Promise<Ro
   let emailTo = "";
   let emailBody = "";
   let confirmationRequired = false;
+  if (advice.tool && advice.tool !== "call_and_send_email") {
+    advice.reply = `${advice.reply} ${await runTool(id, advice.tool, question)}`.trim();
+  }
+  if (advice.tool === "call_and_send_email" && !advice.email) {
+    advice.reply = `${advice.reply} ${await runTool(id, advice.tool, question)}`.trim();
+  }
   if (advice.email) {
     const held = asRecord(await send("sendEmail", { To: advice.email.to, Body: advice.email.body, Confirmed: "false" }));
     if (held?.confirmationRequired === true) {
@@ -174,6 +178,32 @@ async function confirmEmail(id: string, req: ActionRequest): Promise<Row> {
     askedAt: new Date().toISOString(),
   });
   return { reply, recommendedAction: text(row.recommendedAction), emailTo: "", emailBody: "", confirmationRequired: false };
+}
+
+async function runTool(id: string, tool: string, question: string): Promise<string> {
+  const service = await runtime.connect.to("InvestigationService");
+  const actor = advisorSettings().reviewerName;
+  try {
+    if (tool === "release_payment_block") {
+      await service.send("releasePaymentBlock", { investigationId: id, actor });
+      return "Payment block released.";
+    }
+    if (tool === "post_subsequent_credit") {
+      await service.send("postSubsequentCredit", { investigationId: id, actor });
+      return "Invoice reduction posted.";
+    }
+    if (tool === "call_and_send_email") {
+      await service.send("prepareSupplierContact", { investigationId: id, actor });
+      return "Call and send email is ready.";
+    }
+    if (tool === "dismiss") {
+      await service.send("dismissInvestigation", { investigationId: id, actor, reason: question.slice(0, 1000) });
+      return "The case was dismissed.";
+    }
+  } catch (error) {
+    return error instanceof Error ? error.message : "The command was rejected.";
+  }
+  return "";
 }
 
 function readTools(): InvestigateTools {

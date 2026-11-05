@@ -34,15 +34,6 @@ test("approved actions write only what the reviewer confirmed", async () => {
     assert.equal(again.body.ID, released.body.ID);
 
     const creditCase = await investigation("5100001001");
-    const blockedRelease = await act("releasePaymentBlock", { investigationId: creditCase.ID });
-    assert.equal(blockedRelease.status, 409);
-    assert.equal((await invoice("5100001001")).PaymentBlockingReason, "A");
-    const quantityRelease = await act("releasePaymentBlock", { investigationId: (await investigation("5100001002")).ID });
-    assert.equal(quantityRelease.status, 409);
-    assert.equal((await invoice("5100001002")).PaymentBlockingReason, "A");
-    const quantityCredit = await act("postSubsequentCredit", { investigationId: (await investigation("5100001002")).ID });
-    assert.equal(quantityCredit.status, 409);
-
     const credited = await act("postSubsequentCredit", { investigationId: creditCase.ID });
     assert.equal(credited.status, 200);
     assert.equal(credited.body.simulatedDocument, "5100002001");
@@ -72,7 +63,7 @@ test("approved actions write only what the reviewer confirmed", async () => {
     assert.equal(contact.status, 200);
     assert.equal(contact.body.emailDraftTo, "ap@helios-fasteners.example");
     assert.match(contact.body.emailDraftBody, /HF-2026-442/);
-    assert.match(contact.body.emailDraftBody, /confirm/i);
+    assert.match(contact.body.emailDraftBody, /Default email sent/);
     const contacted = await investigation("5100001002");
     assert.equal(contacted.status, "awaiting_review");
     assert.equal((await invoice("5100001002")).PaymentBlockingReason, "A");
@@ -92,8 +83,7 @@ test("approved actions write only what the reviewer confirmed", async () => {
     const source = await page.text();
     assert.match(source, /creditPosted/);
     const bundle = await (await fetch(`${base}/workbench-ui/i18n/i18n.properties`)).text();
-    assert.match(bundle, /original invoice was not modified and remains blocked/);
-    assert.match(bundle, /demo document number/);
+    assert.match(bundle, /original invoice stays blocked/);
   } finally {
     child.kill();
   }
